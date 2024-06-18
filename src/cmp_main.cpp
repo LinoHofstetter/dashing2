@@ -405,6 +405,10 @@ int cmp_main(int argc, char **argv, DistanceCallback callback, SketchingResult &
         }
         load_results(distopts, result, paths);
     } else if (presketched && cmp_objects){ //New case for when we want to compare SketchingResult Objects directly
+        if(verbosity >= Verbosity::DEBUG) {
+            std::string sketch_path = sketch1.names_.empty() ? "EMPTY SKETCH PATH (case2: cmp_main)" : sketch1.names_[0];
+            std::cout << "SKETCH PATH = " << sketch_path << std::endl;
+        }
         std::string sketch_path = sketch1.names_.empty() ? "" : sketch1.names_[0];
         if (!sketch_path.empty()) {
             std::set<std::string> suffixset;
@@ -446,7 +450,12 @@ int cmp_main(int argc, char **argv, DistanceCallback callback, SketchingResult &
                 }
                 distopts.use128(true);
             }
+        } else { //This case just for debugging -> DELETE AFTERWARDS
+            std::cout << "Empty Sketch Path -> Assuming .opss" << std::endl;
+            distopts.sspace_ = SPACE_SET;
+            distopts.kmer_result(FULL_SETSKETCH);
         }
+        
         load_results_objects(distopts, result, sketch1, sketch2); //newly defined function to load into result from existing SketchingResult objects instead of files
     } else {
         sketch_core(result, distopts, paths, outfile);
@@ -459,6 +468,9 @@ int cmp_main(int argc, char **argv, DistanceCallback callback, SketchingResult &
                 std::fprintf(stderr, "Item %u has %g at idx %u\n", i, result.signatures_[i * distopts.sketchsize_ + j], j);
             }
         }
+    }
+    if (verbosity >= Verbosity::DEBUG) {
+        std::cout << "About to call cmp_core" << std::endl;
     }
     cmp_core(distopts, result, callback);
     return 0;
