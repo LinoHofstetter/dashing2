@@ -191,7 +191,7 @@ int cmp_presketched(const std::string &sketch1, const std::string &sketch2) {
 
 
 
-int dashing2_main(int argc, char **argv, DistanceCallback callback, dashing2::SketchingResult &sketch1, dashing2::SketchingResult &sketch2, bool cmp_objects) {
+int dashing2_main(int argc, char **argv, DistanceCallback callback, dashing2::SketchingResult *sketch1, dashing2::SketchingResult *sketch2, bool cmp_objects) {
     std::string cmd(std::filesystem::absolute(std::filesystem::path(argv[0])));
     for(char **s = (argv + 1); *s; cmd += std::string(" ") + *s++);
     std::fprintf(stderr, "#Calling Dashing2 version %s with command '%s'\n", DASHING2_VERSION, cmd.data());
