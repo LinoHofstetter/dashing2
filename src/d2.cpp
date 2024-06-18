@@ -155,8 +155,38 @@ void sketch_wrapper(const std::string &input_filepaths, const std::string &sketc
     if (result != 0) {
        throw std::runtime_error("d2.cpp/sketch_wrapper() failed"); 
     }
+    return;
 }
 
+int cmp_presketched(const std::string &sketch1, const std::string &sketch2) {
+    float distance_0_1 = 0.0;
+    DistanceCallback callback = [&](size_t i, size_t j, float distance) {
+        if (i == 0 && j == 1) {
+            distance_0_1 = distance;
+        }
+    };
+
+    std::vector<std::string> args = {
+        "dashing2",                // Command 
+        "cmp",                     // Subcommand
+        "--presketched",           // Flag to indicate pre-sketched files
+        sketch1,  // Path to first precomputed sketch
+        sketch2  // Path to second precomputed sketch
+    };
+
+    std::vector<char*> argv;
+    for (auto& arg : args) { // Convert std::string arguments to char*
+        argv.push_back(&arg.front());
+    }
+    int argc = argv.size();
+    int result = dashing2_main(argc, argv.data(), callback);
+
+    if (result != 0) {
+       throw std::runtime_error("d2.cpp/sketch_wrapper() failed"); 
+    }
+
+    return distance_0_1;
+}
 
 
 
