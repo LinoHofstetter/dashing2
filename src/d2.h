@@ -320,7 +320,50 @@ extern std::atomic<uint64_t> compare_count;
 
 void set_verbosity(Verbosity level); //Function to expose verbosity so it can be set from outside
 
-struct SketchingResult; //Forward declaration for argument reasons -> needs to be inside dashing2 namespace
+//struct SketchingResult; //Forward declaration for argument reasons -> needs to be inside dashing2 namespace
+
+static bool seqs_in_memory = false;
+
+struct SketchingResult {
+    SketchingResult(): sequences_(seqs_in_memory) {}
+    SketchingResult(SketchingResult &&o) = default;
+    SketchingResult(const SketchingResult &o) = delete;
+    SketchingResult(SketchingResult &o) = delete;
+    SketchingResult &operator=(SketchingResult &&o) = default;
+    SketchingResult &operator=(const SketchingResult &o) = delete;
+
+    std::vector<std::string> names_; // List of files, potentially multiple per line
+    std::vector<std::string> destination_files_; // Contains sketches/kmer-sets,kmer-sequences etc.
+    std::vector<std::string> kmerfiles_;         // Contains file-paths for k-mers, if saved.
+    std::vector<std::string> kmercountfiles_;    // Contains k-mer counts, if saved
+    // kmerfiles and kmercountfiles are unset for bed files
+    std::vector<uint32_t> nperfile_; // This is either empty (in which case each filename/row has its own sketch)
+                                     // Or, this contains a list indicating the number of sketches created for each file/line
+    std::vector<double> cardinalities_; //apparently holds the cardinalties of a particular input sequence
+    tmpseq::MemoryOrRAMSequences sequences_;
+    // This is only filled if sspace is SPACE_EDIT_DISTANCE and
+    // we are using LSH only for pre-filtering but performing exact distance calculations via edit distance
+    mm::vector<RegT> signatures_; //holds register values of sketches
+    // TODO: mmap these matrices to reduce peak memory footprint
+    mm::vector<uint64_t> kmers_;
+    std::vector<float> kmercounts_; // Contains counts for k-mers, if desired
+    // This contains the k-mers corresponding to signatures, if asked for 128-bit k-mers, these are stored in chunks of 2 64-bit integers.
+    size_t nq = 0;
+    size_t total_seqs() const {
+        // Sum of nperfile if nonempty
+        // otherwise, just one sequence/bag of k-mers per "name"
+        return nperfile_.size() ? std::accumulate(nperfile_.begin(), nperfile_.end(), size_t(0)): names_.size();
+    }
+    std::string str() const;
+    static SketchingResult merge(SketchingResult *start, size_t n, const std::vector<std::string> &);
+    void print();
+    size_t nqueries() const {return nq;}
+    void nqueries(size_t nqnew) {nq = nqnew;}
+};
+
+
+
+
 
 } // namespace dashing2
 //std::vector<RegT> reduce(flat_hash_map<std::string, std::vector<RegT>> &map);

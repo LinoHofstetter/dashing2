@@ -21,7 +21,7 @@ static inline std::string to_string(const T *ptr) {
 struct Dashing2DistOptions;
 
 //Moved this to d2.h for cmp-objects reasons
-static bool seqs_in_memory = false;
+/*static bool seqs_in_memory = false;
 
 struct SketchingResult {
     SketchingResult(): sequences_(seqs_in_memory) {}
@@ -58,7 +58,7 @@ struct SketchingResult {
     void print();
     size_t nqueries() const {return nq;}
     void nqueries(size_t nqnew) {nq = nqnew;}
-};
+};*/
 using FastxSketchingResult = SketchingResult;
 void seq_resize(std::vector<std::string>& seqs, const size_t num_seqs);
 void seq_resize(tmpseq::Seqs&seqs, const size_t num_seqs) noexcept;
