@@ -197,7 +197,61 @@ void load_results(Dashing2DistOptions &opts, SketchingResult &result, const std:
     }
 }
 
-int cmp_main(int argc, char **argv, DistanceCallback callback) {
+//New function to load cardinalities_, signatures_ etc. into result from existing SketchingResult objects instead of files
+void load_results_objects(Dashing2DistOptions &opts, SketchingResult &result, SketchingResult &sketch1, SketchingResult &sketch2) {
+    // Verify that both sketches have the same sketch size
+    size_t sketch1_size = sketch1.signatures_.size();
+    size_t sketch2_size = sketch2.signatures_.size();
+
+    if (sketch1_size != sketch2_size) {
+        throw std::runtime_error("Sketch sizes are not the same.");
+    }
+
+    // Set the sketch size in options
+    opts.sketchsize_ = sketch1_size;
+
+    // Merge the names, cardinalities, and signatures
+    result.names_.reserve(sketch1.names_.size() + sketch2.names_.size());
+    result.names_.insert(result.names_.end(), sketch1.names_.begin(), sketch1.names_.end());
+    result.names_.insert(result.names_.end(), sketch2.names_.begin(), sketch2.names_.end());
+
+    result.cardinalities_.reserve(sketch1.cardinalities_.size() + sketch2.cardinalities_.size());
+    result.cardinalities_.insert(result.cardinalities_.end(), sketch1.cardinalities_.begin(), sketch1.cardinalities_.end());
+    result.cardinalities_.insert(result.cardinalities_.end(), sketch2.cardinalities_.begin(), sketch2.cardinalities_.end());
+
+    // For signatures, we use resize and manual copying
+    size_t total_size = sketch1.signatures_.size() + sketch2.signatures_.size();
+    result.signatures_.resize(total_size);
+
+    result.signatures_.reserve(sketch1.signatures_.size() + sketch2.signatures_.size());
+    std::copy(sketch1.signatures_.begin(), sketch1.signatures_.end(), result.signatures_.begin());
+    std::copy(sketch2.signatures_.begin(), sketch2.signatures_.end(), result.signatures_.begin() + sketch1.signatures_.size());
+    
+    // Resize kmercountfiles and kmers, if they are used
+    if (!sketch1.kmercountfiles_.empty() || !sketch2.kmercountfiles_.empty()) {
+        result.kmercountfiles_.reserve(sketch1.kmercountfiles_.size() + sketch2.kmercountfiles_.size());
+        result.kmercountfiles_.insert(result.kmercountfiles_.end(), sketch1.kmercountfiles_.begin(), sketch1.kmercountfiles_.end());
+        result.kmercountfiles_.insert(result.kmercountfiles_.end(), sketch2.kmercountfiles_.begin(), sketch2.kmercountfiles_.end());
+    }
+
+    if (!sketch1.kmers_.empty() || !sketch2.kmers_.empty()) {
+        result.kmers_.resize(sketch1.kmers_.size() + sketch2.kmers_.size());
+        std::copy(sketch1.kmers_.begin(), sketch1.kmers_.end(), result.kmers_.begin());
+        std::copy(sketch2.kmers_.begin(), sketch2.kmers_.end(), result.kmers_.begin() + sketch1.kmers_.size());
+    }
+
+    if (!sketch1.kmercounts_.empty() || !sketch2.kmercounts_.empty()) {
+        result.kmercounts_.reserve(sketch1.kmercounts_.size() + sketch2.kmercounts_.size());
+        result.kmercounts_.insert(result.kmercounts_.end(), sketch1.kmercounts_.begin(), sketch1.kmercounts_.end());
+        result.kmercounts_.insert(result.kmercounts_.end(), sketch2.kmercounts_.begin(), sketch2.kmercounts_.end());
+    }
+
+    // Update the number of queries
+    result.nqueries(2);  // Set the number of sketches or queries involved
+    return;
+}
+
+int cmp_main(int argc, char **argv, DistanceCallback callback, SketchingResult &sketch1, SketchingResult &sketch2, bool cmp_objects) {
     int c;
     int k = -1, w = 0, nt = -1;
     SketchSpace sketch_space = SPACE_SET;
@@ -302,7 +356,7 @@ int cmp_main(int argc, char **argv, DistanceCallback callback) {
     distopts.measure_ = measure;
     distopts.cmp_batch_size_ = default_batchsize(batch_size, distopts);
     SketchingResult result;
-    if(presketched) {
+    if(presketched && !cmp_objects) { //keep functionality if we don't want to compare objects directly
         std::set<std::string> suffixset;
         for(const auto &p: paths) {
             suffixset.insert(p.substr(p.find_last_of('.'), std::string::npos));
@@ -350,6 +404,50 @@ int cmp_main(int argc, char **argv, DistanceCallback callback) {
             distopts.use128(true);
         }
         load_results(distopts, result, paths);
+    } else if (presketched && cmp_objects){ //New case for when we want to compare SketchingResult Objects directly
+        std::string sketch_path = sketch1.names_.empty() ? "" : sketch1.names_[0];
+        if (!sketch_path.empty()) {
+            std::set<std::string> suffixset;
+            suffixset.insert(sketch_path.substr(sketch_path.find_last_of('.'), std::string::npos));
+            std::string suf = *suffixset.begin();
+            if (suf == ".bmh") {
+                distopts.sspace_ = SPACE_MULTISET;
+                distopts.kmer_result(FULL_SETSKETCH);
+            } else if (suf == ".pmh") {
+                distopts.sspace_ = SPACE_PSET;
+                distopts.kmer_result(FULL_SETSKETCH);
+            } else if (suf == ".ss" || suf == ".opss") {
+                distopts.sspace_ = SPACE_SET;
+                distopts.kmer_result(suf == ".opss" ? ONE_PERM : FULL_SETSKETCH);
+            } else if (suf == ".kmerset64") {
+                distopts.sspace_ = SPACE_SET;
+                distopts.kmer_result(FULL_MMER_SET);
+                distopts.use128(false);
+            } else if (suf == ".kmerset128") {
+                distopts.sspace_ = SPACE_SET;
+                distopts.kmer_result(FULL_MMER_SET);
+                distopts.use128(true);
+            } else if (suf == "mmerseq64") {
+                distopts.sspace_ = SPACE_SET;
+                std::string countg = sketch_path.substr(0, sketch_path.find_last_of('.')) + "kmercounts.f64";
+                if (bns::isfile(countg)) {
+                    distopts.kmer_result(FULL_MMER_COUNTDICT);
+                } else {
+                    distopts.kmer_result(FULL_MMER_SEQUENCE);
+                }
+                distopts.use128(false);
+            } else if (suf == "mmerseq128") {
+                distopts.sspace_ = SPACE_SET;
+                std::string countg = sketch_path.substr(0, sketch_path.find_last_of('.')) + "kmercounts.f64";
+                if (bns::isfile(countg)) {
+                    distopts.kmer_result(FULL_MMER_COUNTDICT);
+                } else {
+                    distopts.kmer_result(FULL_MMER_SEQUENCE);
+                }
+                distopts.use128(true);
+            }
+        }
+        load_results_objects(distopts, result, sketch1, sketch2); //newly defined function to load into result from existing SketchingResult objects instead of files
     } else {
         sketch_core(result, distopts, paths, outfile);
         result.nqueries(nq);

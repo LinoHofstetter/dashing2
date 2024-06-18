@@ -16,9 +16,12 @@ static inline std::string to_string(const T *ptr) {
     return oss.str();
 }
 
-static bool seqs_in_memory = false;
+
 
 struct Dashing2DistOptions;
+
+//Moved this to d2.h for cmp-objects reasons
+static bool seqs_in_memory = false;
 
 struct SketchingResult {
     SketchingResult(): sequences_(seqs_in_memory) {}
