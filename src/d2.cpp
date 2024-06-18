@@ -2,7 +2,7 @@
 #include <filesystem>
 
 namespace dashing2 {
-int cmp_main(int argc, char **argv, DistanceCallback callback, SketchingResult &sketch1, SketchingResult &sketch2, bool cmp_objects);
+int cmp_main(int argc, char **argv, DistanceCallback callback, SketchingResult *sketch1, SketchingResult *sketch2, bool cmp_objects);
 int contain_main(int argc, char **argv);
 int wsketch_main(int argc, char **argv);
 int sketch_main(int argc, char **argv);

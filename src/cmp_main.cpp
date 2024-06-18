@@ -251,7 +251,7 @@ void load_results_objects(Dashing2DistOptions &opts, SketchingResult &result, Sk
     return;
 }
 
-int cmp_main(int argc, char **argv, DistanceCallback callback, SketchingResult &sketch1, SketchingResult &sketch2, bool cmp_objects) {
+int cmp_main(int argc, char **argv, DistanceCallback callback, SketchingResult *sketch1, SketchingResult *sketch2, bool cmp_objects) {
     int c;
     int k = -1, w = 0, nt = -1;
     SketchSpace sketch_space = SPACE_SET;
