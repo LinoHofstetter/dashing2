@@ -136,7 +136,7 @@ int sketch_main(int argc, char **argv) {
     if(verbosity >= EXTREME) {
         std::fprintf(stderr, "About to sketch\n");
     }
-    sketch_core(result, distopts, paths, outfile);
+    sketch_core(result, distopts, paths, outfile); //Perform Sketching and store it in result SketchingResults object
     if(verbosity >= EXTREME) {
         std::fprintf(stderr, "Finished sketching\n");
     }

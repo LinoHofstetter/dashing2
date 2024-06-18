@@ -123,7 +123,7 @@ void load_results(Dashing2DistOptions &opts, SketchingResult &result, const std:
         if(verbosity >= Verbosity::INFO) {
             std::fprintf(stderr, "[%s:%d] File sizes are %s\n", __FILE__, __LINE__, even ? "even": "uneven");
         }
-        if(even) {
+        if(even) { // If multiple sketchfiles are loaded and they have the same size, the sketchsize of the first file is chosen
             if(fsizes.empty()) {
                 throw std::runtime_error("fsizes are empty but should not be.");
             }

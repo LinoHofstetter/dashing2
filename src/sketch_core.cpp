@@ -19,6 +19,7 @@ SketchingResult &sketch_core(SketchingResult &result, Dashing2DistOptions &opts,
     result.kmers_.memthreshold(MEMSIGTHRESH);
     const size_t npaths = paths.size();
     std::string tmpfile;
+    //Only this first if statement out of the next three conditional branches is relevant if working with fasta files
     if(opts.dtype_ == DataType::FASTX) {
         if(opts.parse_by_seq_) {
             if(paths.size() != 1) {
@@ -106,6 +107,7 @@ SketchingResult &sketch_core(SketchingResult &result, Dashing2DistOptions &opts,
         }
     }
     std::FILE *ofp;
+    //Writing results in case of working with Full Mmer Sequences
     if(opts.kmer_result_ == FULL_MMER_SEQUENCE) {
         if((ofp = bfopen(outfile.data(), "r+")) == nullptr) THROW_EXCEPTION(std::runtime_error("Failed to open output file for mmer sequence results."));
         size_t offset = result.names_.size();
@@ -126,7 +128,9 @@ SketchingResult &sketch_core(SketchingResult &result, Dashing2DistOptions &opts,
             }
         }
         std::fclose(ofp);
-    } else {
+    } 
+    //Handling file writing for other cases
+    else {
         if(outfile.size() && outfile != "/dev/stdout" && outfile != "-") {
             // This should not overlap with the memory mapped for result.signatures_
             const uint64_t t = result.cardinalities_.size();
@@ -143,6 +147,7 @@ SketchingResult &sketch_core(SketchingResult &result, Dashing2DistOptions &opts,
             }
         }
     }
+    //Handle output for additional files (names and kmer counts)
     if(!outfile.empty() && result.names_.size()) {
         if((ofp = bfopen((outfile + ".names.txt").data(), "wb")) == nullptr)
             THROW_EXCEPTION(std::runtime_error(std::string("Failed to open outfile at ") + outfile + ".names.txt"));
