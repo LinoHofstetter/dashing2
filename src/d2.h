@@ -371,9 +371,13 @@ using DistanceCallback = std::function<void(size_t, size_t, float)>;
 
 void sketch_wrapper(const std::string &input_filepaths, const std::string &sketch_output_dir); //wrapper function to perform "dashing2 sketch -F" call
 int cmp_presketched(const std::string &sketch1, const std::string &sketch2); //wrapper function to compute distance between precomputed sketches. Arguments are paths to sketchfiles
+//int dashing2_main(int argc, char **argv, DistanceCallback callback = nullptr, 
+//                  dashing2::SketchingResult *sketch1 = nullptr, 
+//                  dashing2::SketchingResult *sketch2 = nullptr, 
+//                  bool cmp_objects = false); //was originally the main function
 int dashing2_main(int argc, char **argv, DistanceCallback callback = nullptr, 
-                  dashing2::SketchingResult *sketch1 = nullptr, 
-                  dashing2::SketchingResult *sketch2 = nullptr, 
-                  bool cmp_objects = false); //was originally the main function
+                  dashing2::SketchingResult &sketch1 = *(new dashing2::SketchingResult()), 
+                  dashing2::SketchingResult &sketch2 = *(new dashing2::SketchingResult()), 
+                  bool cmp_objects = false);
 
 #endif
