@@ -198,8 +198,11 @@ int dashing2_main(int argc, char **argv, DistanceCallback callback, dashing2::Sk
     if(argc > 1) {
         if(std::strcmp(argv[1], "sketch") == 0)
             return sketch_main(argc - 1, argv + 1);
-        if(std::strcmp(argv[1], "cmp") == 0 || std::strcmp(argv[1], "dist") == 0)
+        if(std::strcmp(argv[1], "cmp") == 0 || std::strcmp(argv[1], "dist") == 0) {
+            std::cout << "About to call cmp_main inside dashing2_main" << std::endl;
             return cmp_main(argc - 1, argv + 1, callback, sketch1, sketch2, cmp_objects);
+        }
+            
         if(std::strcmp(argv[1], "wsketch") == 0)
             return wsketch_main(argc - 1, argv + 1);
         if(std::strcmp(argv[1], "contain") == 0)

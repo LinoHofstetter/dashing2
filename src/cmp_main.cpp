@@ -199,6 +199,7 @@ void load_results(Dashing2DistOptions &opts, SketchingResult &result, const std:
 
 //New function to load cardinalities_, signatures_ etc. into result from existing SketchingResult objects instead of files
 void load_results_objects(Dashing2DistOptions &opts, SketchingResult &result, SketchingResult &sketch1, SketchingResult &sketch2) {
+    std::cout << "Inside load_results_objects" << std::endl;
     // Verify that both sketches have the same sketch size
     size_t sketch1_size = sketch1.signatures_.size();
     size_t sketch2_size = sketch2.signatures_.size();
@@ -214,10 +215,12 @@ void load_results_objects(Dashing2DistOptions &opts, SketchingResult &result, Sk
     result.names_.reserve(sketch1.names_.size() + sketch2.names_.size());
     result.names_.insert(result.names_.end(), sketch1.names_.begin(), sketch1.names_.end());
     result.names_.insert(result.names_.end(), sketch2.names_.begin(), sketch2.names_.end());
+    std::cout << "Merged names" << std::endl;
 
     result.cardinalities_.reserve(sketch1.cardinalities_.size() + sketch2.cardinalities_.size());
     result.cardinalities_.insert(result.cardinalities_.end(), sketch1.cardinalities_.begin(), sketch1.cardinalities_.end());
     result.cardinalities_.insert(result.cardinalities_.end(), sketch2.cardinalities_.begin(), sketch2.cardinalities_.end());
+    std::cout << "Merged cardinalities" << std::endl;
 
     // For signatures, we use resize and manual copying
     size_t total_size = sketch1.signatures_.size() + sketch2.signatures_.size();
@@ -226,7 +229,9 @@ void load_results_objects(Dashing2DistOptions &opts, SketchingResult &result, Sk
     result.signatures_.reserve(sketch1.signatures_.size() + sketch2.signatures_.size());
     std::copy(sketch1.signatures_.begin(), sketch1.signatures_.end(), result.signatures_.begin());
     std::copy(sketch2.signatures_.begin(), sketch2.signatures_.end(), result.signatures_.begin() + sketch1.signatures_.size());
-    
+    std::cout << "Merged signatures" << std::endl;
+
+    /*
     // Resize kmercountfiles and kmers, if they are used
     if (!sketch1.kmercountfiles_.empty() || !sketch2.kmercountfiles_.empty()) {
         result.kmercountfiles_.reserve(sketch1.kmercountfiles_.size() + sketch2.kmercountfiles_.size());
@@ -244,7 +249,7 @@ void load_results_objects(Dashing2DistOptions &opts, SketchingResult &result, Sk
         result.kmercounts_.reserve(sketch1.kmercounts_.size() + sketch2.kmercounts_.size());
         result.kmercounts_.insert(result.kmercounts_.end(), sketch1.kmercounts_.begin(), sketch1.kmercounts_.end());
         result.kmercounts_.insert(result.kmercounts_.end(), sketch2.kmercounts_.begin(), sketch2.kmercounts_.end());
-    }
+    }*/
 
     // Update the number of queries
     result.nqueries(2);  // Set the number of sketches or queries involved
@@ -252,6 +257,7 @@ void load_results_objects(Dashing2DistOptions &opts, SketchingResult &result, Sk
 }
 
 int cmp_main(int argc, char **argv, DistanceCallback callback, SketchingResult &sketch1, SketchingResult &sketch2, bool cmp_objects) {
+    std::cout << "Inside cmp_main" << std::endl;
     int c;
     int k = -1, w = 0, nt = -1;
     SketchSpace sketch_space = SPACE_SET;
@@ -356,6 +362,7 @@ int cmp_main(int argc, char **argv, DistanceCallback callback, SketchingResult &
     distopts.measure_ = measure;
     distopts.cmp_batch_size_ = default_batchsize(batch_size, distopts);
     SketchingResult result;
+    std::cout << "Inside cmp_objects - about to check presketched property" << std::endl;
     if(presketched && !cmp_objects) { //keep functionality if we don't want to compare objects directly
         std::set<std::string> suffixset;
         for(const auto &p: paths) {
@@ -456,7 +463,7 @@ int cmp_main(int argc, char **argv, DistanceCallback callback, SketchingResult &
             distopts.sspace_ = SPACE_SET;
             distopts.kmer_result(FULL_SETSKETCH);
         }
-        
+        std::cout << "About to call load_results_objects" << std::endl;
         load_results_objects(distopts, result, sketch1, sketch2); //newly defined function to load into result from existing SketchingResult objects instead of files
     } else {
         sketch_core(result, distopts, paths, outfile);
@@ -473,6 +480,7 @@ int cmp_main(int argc, char **argv, DistanceCallback callback, SketchingResult &
     if (verbosity >= Verbosity::DEBUG) {
         std::cout << "About to call cmp_core" << std::endl;
     }
+    std::cout << "About to call cmp_core" << std::endl;
     cmp_core(distopts, result, callback);
     return 0;
 }
