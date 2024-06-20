@@ -189,9 +189,23 @@ int cmp_presketched(const std::string &sketch1, const std::string &sketch2) {
 }
 
 
+//Workaround for default arguments
+int dashing2_main(int argc, char **argv, DistanceCallback callback = nullptr) {
+    if (verbosity >= Verbosity::DEBUG){ //added for debugging
+        std::cout << "Inside reduced args dashing2_main, about to real dashing2_main" << std::endl;
+    }
+    dashing2::SketchingResult sketch1;
+    dashing2::SketchingResult sketch2;
+    bool cmp_objects = false;
 
+    // Delegate to the full version of dashing2_main
+    return dashing2_main(argc, argv, callback, std::move(sketch1), std::move(sketch2), cmp_objects);
+}
 
 int dashing2_main(int argc, char **argv, DistanceCallback callback, dashing2::SketchingResult sketch1, dashing2::SketchingResult sketch2, bool cmp_objects) {
+    if (verbosity >= Verbosity::DEBUG){ //added for debugging
+        std::cout << "Inside dashing2_main, about to call command functions based on arguments" << std::endl;
+    }
     std::string cmd(std::filesystem::absolute(std::filesystem::path(argv[0])));
     for(char **s = (argv + 1); *s; cmd += std::string(" ") + *s++);
     std::fprintf(stderr, "#Calling Dashing2 version %s with command '%s'\n", DASHING2_VERSION, cmd.data());
@@ -199,6 +213,9 @@ int dashing2_main(int argc, char **argv, DistanceCallback callback, dashing2::Sk
         if(std::strcmp(argv[1], "sketch") == 0)
             return sketch_main(argc - 1, argv + 1);
         if(std::strcmp(argv[1], "cmp") == 0 || std::strcmp(argv[1], "dist") == 0) {
+            if (verbosity >= Verbosity::DEBUG){ //added for debugging
+                std::cout << "Inside cmp_branch in cmp_main" << std::endl;
+            }
             std::cout << "About to call cmp_main inside dashing2_main" << std::endl;
             return cmp_main(argc - 1, argv + 1, callback, sketch1, sketch2, cmp_objects);
         }
