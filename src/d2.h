@@ -418,9 +418,13 @@ int cmp_presketched(const std::string &sketch1, const std::string &sketch2); //w
 //                  dashing2::SketchingResult *sketch1 = nullptr, 
 //                  dashing2::SketchingResult *sketch2 = nullptr, 
 //                  bool cmp_objects = false); //was originally the main function
-int dashing2_main(int argc, char **argv, DistanceCallback callback = nullptr, 
+/*int dashing2_main(int argc, char **argv, DistanceCallback callback = nullptr, 
                   dashing2::SketchingResult &sketch1 = *(new dashing2::SketchingResult()), 
                   dashing2::SketchingResult &sketch2 = *(new dashing2::SketchingResult()), 
+                  bool cmp_objects = false);*/
+int dashing2_main(int argc, char **argv, DistanceCallback callback = nullptr, 
+                  dashing2::SketchingResult sketch1 = dashing2::SketchingResult(), 
+                  dashing2::SketchingResult sketch2 = dashing2::SketchingResult(), 
                   bool cmp_objects = false);
 
 #endif
