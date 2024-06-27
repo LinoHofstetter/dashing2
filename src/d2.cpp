@@ -210,6 +210,9 @@ int dashing2_main(int argc, char **argv, DistanceCallback callback, dashing2::Sk
     for(char **s = (argv + 1); *s; cmd += std::string(" ") + *s++);
     std::fprintf(stderr, "#Calling Dashing2 version %s with command '%s'\n", DASHING2_VERSION, cmd.data());
     if(argc > 1) {
+        if (verbosity >= Verbosity::DEBUG){ //added for debugging
+            std::cout << "Inside argc > 1 in dashing2_main" << std::endl;
+        }
         if(std::strcmp(argv[1], "sketch") == 0)
             return sketch_main(argc - 1, argv + 1);
         if(std::strcmp(argv[1], "cmp") == 0 || std::strcmp(argv[1], "dist") == 0) {
