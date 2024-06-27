@@ -190,7 +190,7 @@ int cmp_presketched(const std::string &sketch1, const std::string &sketch2) {
 
 
 //Workaround for default arguments
-int dashing2_main(int argc, char **argv, DistanceCallback callback = nullptr) {
+int dashing2_main(int argc, char **argv, DistanceCallback callback) {
     if (verbosity >= Verbosity::DEBUG){ //added for debugging
         std::cout << "Inside reduced args dashing2_main, about to real dashing2_main" << std::endl;
     }
