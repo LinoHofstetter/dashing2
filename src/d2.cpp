@@ -207,8 +207,11 @@ int dashing2_main(int argc, char **argv, DistanceCallback callback, dashing2::Sk
         std::cout << "Inside dashing2_main, about to call command functions based on arguments" << std::endl;
     }
     std::string cmd(std::filesystem::absolute(std::filesystem::path(argv[0])));
+    std::cout << "d2: 1" << std::endl;
     for(char **s = (argv + 1); *s; cmd += std::string(" ") + *s++);
+    std::cout << "d2: 2" << std::endl;
     std::fprintf(stderr, "#Calling Dashing2 version %s with command '%s'\n", DASHING2_VERSION, cmd.data());
+    std::cout << "d2: 3" << std::endl;
     if(argc > 1) {
         if (verbosity >= Verbosity::DEBUG){ //added for debugging
             std::cout << "Inside argc > 1 in dashing2_main" << std::endl;
