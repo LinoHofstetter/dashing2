@@ -208,14 +208,14 @@ int dashing2_main(int argc, char **argv, DistanceCallback callback, dashing2::Sk
     }*/
     std::string cmd(std::filesystem::absolute(std::filesystem::path(argv[0])));
     std::cout << "d2: 1" << std::endl;
-    //for(char **s = (argv + 1); *s; cmd += std::string(" ") + *s++);
+    for(char **s = (argv + 1); *s; cmd += std::string(" ") + *s++);
     // Simplified loop for debugging
-    for (int i = 1; i < argc; ++i) {
+    /*for (int i = 1; i < argc; ++i) {
         if (argv[i]) {
             cmd += " " + std::string(argv[i]);
             std::cout << "Adding argument: " << argv[i] << std::endl; // Debug print
         }
-    }
+    }*/
 
     std::cout << "d2: 2" << std::endl;
     std::fprintf(stderr, "#Calling Dashing2 version %s with command '%s'\n", DASHING2_VERSION, cmd.data());
