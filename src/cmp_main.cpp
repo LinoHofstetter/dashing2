@@ -224,10 +224,14 @@ void load_results_objects(Dashing2DistOptions &opts, SketchingResult &result, Sk
 
     // For signatures, we use resize and manual copying
     size_t total_size = sketch1.signatures_.size() + sketch2.signatures_.size();
+    std::cout << "lro: 1" << std::endl;
     result.signatures_.resize(total_size);
+    std::cout << "lro: 2" << std::endl;
 
     result.signatures_.reserve(sketch1.signatures_.size() + sketch2.signatures_.size());
+    std::cout << "lro: 3" << std::endl;
     std::copy(sketch1.signatures_.begin(), sketch1.signatures_.end(), result.signatures_.begin());
+    std::cout << "lro: 4" << std::endl;
     std::copy(sketch2.signatures_.begin(), sketch2.signatures_.end(), result.signatures_.begin() + sketch1.signatures_.size());
     std::cout << "Merged signatures" << std::endl;
 
@@ -257,7 +261,9 @@ void load_results_objects(Dashing2DistOptions &opts, SketchingResult &result, Sk
 }
 
 int cmp_main(int argc, char **argv, DistanceCallback callback, SketchingResult &sketch1, SketchingResult &sketch2, bool cmp_objects) {
-    std::cout << "Inside cmp_main" << std::endl;
+    if (verbosity >= Verbosity::DEBUG){
+        std::cout << "Inside cmp_main" << std::endl;
+    }
     int c;
     int k = -1, w = 0, nt = -1;
     SketchSpace sketch_space = SPACE_SET;
@@ -362,7 +368,9 @@ int cmp_main(int argc, char **argv, DistanceCallback callback, SketchingResult &
     distopts.measure_ = measure;
     distopts.cmp_batch_size_ = default_batchsize(batch_size, distopts);
     SketchingResult result;
-    std::cout << "Inside cmp_objects - about to check presketched property" << std::endl;
+    if (verbosity >= Verbosity::DEBUG){
+        std::cout << "Inside cmp_main - about to check presketched property" << std::endl;
+    }
     if(presketched && !cmp_objects) { //keep functionality if we don't want to compare objects directly
         std::set<std::string> suffixset;
         for(const auto &p: paths) {
@@ -412,8 +420,8 @@ int cmp_main(int argc, char **argv, DistanceCallback callback, SketchingResult &
         }
         load_results(distopts, result, paths);
     } else if (presketched && cmp_objects){ //New case for when we want to compare SketchingResult Objects directly
-        std::cout << "inside second branch in cmp_main presketched check" << std::endl;
         if(verbosity >= Verbosity::DEBUG) {
+            std::cout << "inside second branch in cmp_main presketched check" << std::endl;
             std::string sketch_path = sketch1.names_.empty() ? "EMPTY SKETCH PATH (case2: cmp_main)" : sketch1.names_[0];
             std::cout << "SKETCH PATH = " << sketch_path << std::endl;
         }
@@ -465,6 +473,9 @@ int cmp_main(int argc, char **argv, DistanceCallback callback, SketchingResult &
         }
         std::cout << "About to call load_results_objects" << std::endl;
         load_results_objects(distopts, result, sketch1, sketch2); //newly defined function to load into result from existing SketchingResult objects instead of files
+        if (verbosity >= Verbosity::DEBUG){
+            std::cout << "Result names: " << result.names_[0] << ", " << result.names_[1] << ", cardinality: " << result.cardinalities_[0] << ", signatures size: " << result.signatures_.size() << std::endl;
+        }
     } else {
         sketch_core(result, distopts, paths, outfile);
         result.nqueries(nq);

@@ -203,12 +203,20 @@ int dashing2_main(int argc, char **argv, DistanceCallback callback) {
 }
 
 int dashing2_main(int argc, char **argv, DistanceCallback callback, dashing2::SketchingResult sketch1, dashing2::SketchingResult sketch2, bool cmp_objects) {
-    if (verbosity >= Verbosity::DEBUG){ //added for debugging
+    /*if (verbosity >= Verbosity::DEBUG){ //added for debugging
         std::cout << "Inside dashing2_main, about to call command functions based on arguments" << std::endl;
-    }
+    }*/
     std::string cmd(std::filesystem::absolute(std::filesystem::path(argv[0])));
     std::cout << "d2: 1" << std::endl;
-    for(char **s = (argv + 1); *s; cmd += std::string(" ") + *s++);
+    //for(char **s = (argv + 1); *s; cmd += std::string(" ") + *s++);
+    // Simplified loop for debugging
+    for (int i = 1; i < argc; ++i) {
+        if (argv[i]) {
+            cmd += " " + std::string(argv[i]);
+            std::cout << "Adding argument: " << argv[i] << std::endl; // Debug print
+        }
+    }
+
     std::cout << "d2: 2" << std::endl;
     std::fprintf(stderr, "#Calling Dashing2 version %s with command '%s'\n", DASHING2_VERSION, cmd.data());
     std::cout << "d2: 3" << std::endl;
@@ -220,9 +228,10 @@ int dashing2_main(int argc, char **argv, DistanceCallback callback, dashing2::Sk
             return sketch_main(argc - 1, argv + 1);
         if(std::strcmp(argv[1], "cmp") == 0 || std::strcmp(argv[1], "dist") == 0) {
             if (verbosity >= Verbosity::DEBUG){ //added for debugging
-                std::cout << "Inside cmp_branch in cmp_main" << std::endl;
+                std::cout << "Sketch 1 name: " << sketch1.names_[0] << ", cardinality: " << sketch1.cardinalities_[0] << ", signatures[1023]: " << sketch1.signatures_[1023] << ", signatures size: " << sketch1.signatures_.size() << std::endl;
+                std::cout << "Sketch 2 name: " << sketch2.names_[0] << ", cardinality: " << sketch2.cardinalities_[0] << ", signatures[1023]: " << sketch2.signatures_[1023] << ", signatures size: " << sketch2.signatures_.size() << std::endl;
+                std::cout << "Inside cmp_branch in dashing2_main, about to call cmp_main" << std::endl;
             }
-            std::cout << "About to call cmp_main inside dashing2_main" << std::endl;
             return cmp_main(argc - 1, argv + 1, callback, sketch1, sketch2, cmp_objects);
         }
             
