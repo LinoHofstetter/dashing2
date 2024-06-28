@@ -208,14 +208,14 @@ int dashing2_main(int argc, char **argv, DistanceCallback callback, dashing2::Sk
     }*/
     std::string cmd(std::filesystem::absolute(std::filesystem::path(argv[0])));
     std::cout << "d2: 1" << std::endl;
-    for(char **s = (argv + 1); *s; cmd += std::string(" ") + *s++);
+    //for(char **s = (argv + 1); *s; cmd += std::string(" ") + *s++);
     // Simplified loop for debugging
-    /*for (int i = 1; i < argc; ++i) {
+    for (int i = 1; i < argc; ++i) {
         if (argv[i]) {
             cmd += " " + std::string(argv[i]);
             std::cout << "Adding argument: " << argv[i] << std::endl; // Debug print
         }
-    }*/
+    }
 
     std::cout << "d2: 2" << std::endl;
     std::fprintf(stderr, "#Calling Dashing2 version %s with command '%s'\n", DASHING2_VERSION, cmd.data());
@@ -226,7 +226,9 @@ int dashing2_main(int argc, char **argv, DistanceCallback callback, dashing2::Sk
         }
         if(std::strcmp(argv[1], "sketch") == 0)
             return sketch_main(argc - 1, argv + 1);
+        std::cout << "d2: 4" << std::endl;
         if(std::strcmp(argv[1], "cmp") == 0 || std::strcmp(argv[1], "dist") == 0) {
+            std::cout << "d2: 5" << std::endl;
             if (verbosity >= Verbosity::DEBUG){ //added for debugging
                 //std::cout << "Sketch 1 name: " << sketch1.names_[0] << ", cardinality: " << sketch1.cardinalities_[0] << ", signatures[1023]: " << sketch1.signatures_[1023] << ", signatures size: " << sketch1.signatures_.size() << std::endl;
                 //std::cout << "Sketch 2 name: " << sketch2.names_[0] << ", cardinality: " << sketch2.cardinalities_[0] << ", signatures[1023]: " << sketch2.signatures_[1023] << ", signatures size: " << sketch2.signatures_.size() << std::endl;
