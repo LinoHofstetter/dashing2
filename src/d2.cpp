@@ -236,7 +236,6 @@ int dashing2_main(int argc, char **argv, DistanceCallback callback, dashing2::Sk
                 std::cout    << ", signatures size: " << sketch1.signatures_.size() << std::endl;
                 std::cout    << ", begin: " << *(sketch1.signatures_.begin()) << std::endl;
                 std::cout    << ", end: " << *(sketch1.signatures_.end() - 1) << std::endl;
-                
                 std::cout << "Inside cmp_branch in dashing2_main, about to call cmp_main" << std::endl;
             }
             return cmp_main(argc - 1, argv + 1, callback, sketch1, sketch2, cmp_objects);
