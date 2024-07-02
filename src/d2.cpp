@@ -188,6 +188,47 @@ int cmp_presketched(const std::string &sketch1, const std::string &sketch2) {
     return distance_0_1;
 }
 
+int cmp_objects(std::shared_ptr<dashing2::SketchingResult> sketch1, std::shared_ptr<dashing2::SketchingResult> sketch2) {
+    float distance_0_1 = 0.0;
+    DistanceCallback callback = [&](size_t i, size_t j, float distance) {
+        if (i == 0 && j == 1) {
+            distance_0_1 = distance;
+        }
+    };
+
+    std::vector<std::string> args = {
+        "dashing2",                // Command 
+        "cmp",                     // Subcommand
+        "--presketched",           // Flag to indicate pre-sketched files
+        "EMPTY",  // Path to first precomputed sketch -> not needed in implementation, name is stored in names_ field after loading from disc
+        "EMPTY"  // Path to second precomputed sketch -> same here
+    };
+
+    std::vector<char*> argv;
+    std::vector<std::unique_ptr<char[]>> arg_buffers; // Buffers to keep the C-style strings alive
+
+    for (const auto& arg : args) {
+        std::unique_ptr<char[]> buffer = std::make_unique<char[]>(arg.size() + 1);
+        std::strcpy(buffer.get(), arg.c_str());
+        argv.push_back(buffer.get());
+        arg_buffers.push_back(std::move(buffer)); // Keep the buffer alive
+    }
+
+    argv.push_back(nullptr); // Ensure null-termination
+    int argc = argv.size() - 1; // Don't count the null terminator
+
+    std::cout << "About to call dashing2_main in cmp_objects" << std::endl;
+    int result = dashing2_main(argc, argv.data(), callback, sketch1, sketch2, true); 
+    
+    if (result != 0) {
+       throw std::runtime_error("cmp_objects() failed"); 
+    }
+
+    std::cout << "CMP-OBJECTS DISTANCE = " << distance_0_1 << std::endl;
+
+    return distance_0_1;
+}
+
 
 //Workaround for default arguments
 int dashing2_main(int argc, char **argv, DistanceCallback callback) {
@@ -203,32 +244,26 @@ int dashing2_main(int argc, char **argv, DistanceCallback callback) {
 }
 
 int dashing2_main(int argc, char **argv, DistanceCallback callback, std::shared_ptr<dashing2::SketchingResult> sketch1, std::shared_ptr<dashing2::SketchingResult> sketch2, bool cmp_objects) {
-    /*if (verbosity >= Verbosity::DEBUG){ //added for debugging
+    if (verbosity >= Verbosity::DEBUG){ //added for debugging
         std::cout << "Inside dashing2_main, about to call command functions based on arguments" << std::endl;
-    }*/
+    }
     std::string cmd(std::filesystem::absolute(std::filesystem::path(argv[0])));
-    std::cout << "d2: 1" << std::endl;
-    //for(char **s = (argv + 1); *s; cmd += std::string(" ") + *s++);
+    for(char **s = (argv + 1); *s; cmd += std::string(" ") + *s++);
     // Simplified loop for debugging
-    for (int i = 1; i < argc; ++i) {
+    /*for (int i = 1; i < argc; ++i) {
         if (argv[i]) {
             cmd += " " + std::string(argv[i]);
-            std::cout << "Adding argument: " << argv[i] << std::endl; // Debug print
+            //std::cout << "Adding argument: " << argv[i] << std::endl; // Debug print
         }
-    }
-
-    std::cout << "d2: 2" << std::endl;
+    }*/
     std::fprintf(stderr, "#Calling Dashing2 version %s with command '%s'\n", DASHING2_VERSION, cmd.data());
-    std::cout << "d2: 3" << std::endl;
     if(argc > 1) {
         if (verbosity >= Verbosity::DEBUG){ //added for debugging
             std::cout << "Inside argc > 1 in dashing2_main" << std::endl;
         }
         if(std::strcmp(argv[1], "sketch") == 0)
             return sketch_main(argc - 1, argv + 1);
-        std::cout << "d2: 4" << std::endl;
         if(std::strcmp(argv[1], "cmp") == 0 || std::strcmp(argv[1], "dist") == 0) {
-            std::cout << "d2: 5" << std::endl;
             if (verbosity >= Verbosity::DEBUG){ //added for debugging
                 std::cout << "Sketch 1 name: " << sketch1->names_[0] << std::endl;
                 std::cout    << ", cardinality: " << sketch1->cardinalities_[0] << std::endl;

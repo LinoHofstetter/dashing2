@@ -199,7 +199,10 @@ void load_results(Dashing2DistOptions &opts, SketchingResult &result, const std:
 
 //New function to load cardinalities_, signatures_ etc. into result from existing SketchingResult objects instead of files
 void load_results_objects(Dashing2DistOptions &opts, SketchingResult &result, SketchingResult &sketch1, SketchingResult &sketch2) {
-    std::cout << "Inside load_results_objects" << std::endl;
+    if (verbosity >= Verbosity::DEBUG){
+        std::cout << "Inside load_results_objects" << std::endl;
+    }
+    
     // Verify that both sketches have the same sketch size
     size_t sketch1_size = sketch1.signatures_.size();
     size_t sketch2_size = sketch2.signatures_.size();
@@ -215,25 +218,23 @@ void load_results_objects(Dashing2DistOptions &opts, SketchingResult &result, Sk
     result.names_.reserve(sketch1.names_.size() + sketch2.names_.size());
     result.names_.insert(result.names_.end(), sketch1.names_.begin(), sketch1.names_.end());
     result.names_.insert(result.names_.end(), sketch2.names_.begin(), sketch2.names_.end());
-    std::cout << "Merged names" << std::endl;
 
     result.cardinalities_.reserve(sketch1.cardinalities_.size() + sketch2.cardinalities_.size());
     result.cardinalities_.insert(result.cardinalities_.end(), sketch1.cardinalities_.begin(), sketch1.cardinalities_.end());
     result.cardinalities_.insert(result.cardinalities_.end(), sketch2.cardinalities_.begin(), sketch2.cardinalities_.end());
-    std::cout << "Merged cardinalities" << std::endl;
 
     // For signatures, we use resize and manual copying
     size_t total_size = sketch1.signatures_.size() + sketch2.signatures_.size();
-    std::cout << "lro: 1" << std::endl;
     result.signatures_.resize(total_size);
-    std::cout << "lro: 2" << std::endl;
 
     result.signatures_.reserve(sketch1.signatures_.size() + sketch2.signatures_.size());
-    std::cout << "lro: 3" << std::endl;
     std::copy(sketch1.signatures_.begin(), sketch1.signatures_.end(), result.signatures_.begin());
-    std::cout << "lro: 4" << std::endl;
     std::copy(sketch2.signatures_.begin(), sketch2.signatures_.end(), result.signatures_.begin() + sketch1.signatures_.size());
-    std::cout << "Merged signatures" << std::endl;
+    
+    if (verbosity >= Verbosity::DEBUG){
+        std::cout << "Merged names, cardinalities & signatures" << std::endl;
+    }
+    
 
     
     // Resize kmercountfiles and kmers, if they are used
@@ -471,7 +472,6 @@ int cmp_main(int argc, char **argv, DistanceCallback callback, SketchingResult &
             distopts.sspace_ = SPACE_SET;
             distopts.kmer_result(FULL_SETSKETCH);
         }
-        std::cout << "About to call load_results_objects" << std::endl;
         load_results_objects(distopts, result, sketch1, sketch2); //newly defined function to load into result from existing SketchingResult objects instead of files
         if (verbosity >= Verbosity::DEBUG){
             std::cout << "Result names: " << result.names_[0] << ", " << result.names_[1] << ", cardinality: " << result.cardinalities_[0] << ", signatures size: " << result.signatures_.size() << std::endl;
