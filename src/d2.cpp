@@ -194,15 +194,15 @@ int dashing2_main(int argc, char **argv, DistanceCallback callback) {
     if (verbosity >= Verbosity::DEBUG){ //added for debugging
         std::cout << "Inside reduced args dashing2_main, about to real dashing2_main" << std::endl;
     }
-    dashing2::SketchingResult sketch1;
-    dashing2::SketchingResult sketch2;
+    auto sketch1 = std::make_shared<dashing2::SketchingResult>();
+    auto sketch2 = std::make_shared<dashing2::SketchingResult>();
     bool cmp_objects = false;
 
     // Delegate to the full version of dashing2_main
-    return dashing2_main(argc, argv, callback, std::move(sketch1), std::move(sketch2), cmp_objects);
+    return dashing2_main(argc, argv, callback, sketch1, sketch2, cmp_objects);
 }
 
-int dashing2_main(int argc, char **argv, DistanceCallback callback, dashing2::SketchingResult sketch1, dashing2::SketchingResult sketch2, bool cmp_objects) {
+int dashing2_main(int argc, char **argv, DistanceCallback callback, std::shared_ptr<dashing2::SketchingResult> sketch1, std::shared_ptr<dashing2::SketchingResult> sketch2, bool cmp_objects) {
     /*if (verbosity >= Verbosity::DEBUG){ //added for debugging
         std::cout << "Inside dashing2_main, about to call command functions based on arguments" << std::endl;
     }*/
@@ -230,15 +230,15 @@ int dashing2_main(int argc, char **argv, DistanceCallback callback, dashing2::Sk
         if(std::strcmp(argv[1], "cmp") == 0 || std::strcmp(argv[1], "dist") == 0) {
             std::cout << "d2: 5" << std::endl;
             if (verbosity >= Verbosity::DEBUG){ //added for debugging
-                std::cout << "Sketch 1 name: " << sketch1.names_[0] << std::endl;
-                std::cout    << ", cardinality: " << sketch1.cardinalities_[0] << std::endl;
-                std::cout    << ", signatures[1023]: " << sketch1.signatures_[1023] << std::endl;
-                std::cout    << ", signatures size: " << sketch1.signatures_.size() << std::endl;
-                std::cout    << ", begin: " << *(sketch1.signatures_.begin()) << std::endl;
-                std::cout    << ", end: " << *(sketch1.signatures_.end() - 1) << std::endl;
+                std::cout << "Sketch 1 name: " << sketch1->names_[0] << std::endl;
+                std::cout    << ", cardinality: " << sketch1->cardinalities_[0] << std::endl;
+                std::cout    << ", signatures[1023]: " << sketch1->signatures_[1023] << std::endl;
+                std::cout    << ", signatures size: " << sketch1->signatures_.size() << std::endl;
+                std::cout    << ", begin: " << *(sketch1->signatures_.begin()) << std::endl;
+                std::cout    << ", end: " << *(sketch1->signatures_.end() - 1) << std::endl;
                 std::cout << "Inside cmp_branch in dashing2_main, about to call cmp_main" << std::endl;
             }
-            return cmp_main(argc - 1, argv + 1, callback, sketch1, sketch2, cmp_objects);
+            return cmp_main(argc - 1, argv + 1, callback, *sketch1, *sketch2, cmp_objects);
         }
             
         if(std::strcmp(argv[1], "wsketch") == 0)

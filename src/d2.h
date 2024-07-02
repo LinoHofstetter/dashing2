@@ -427,6 +427,7 @@ int cmp_presketched(const std::string &sketch1, const std::string &sketch2); //w
 
 int dashing2_main(int argc, char **argv, DistanceCallback callback = nullptr); //Workaraound for case when I don't want to pass sketches (default arguments give errors in implementation)          
 //apparently I need to remove the second callback default
-int dashing2_main(int argc, char **argv, DistanceCallback callback, dashing2::SketchingResult sketch1, dashing2::SketchingResult sketch2, bool cmp_objects);
+//int dashing2_main(int argc, char **argv, DistanceCallback callback, dashing2::SketchingResult sketch1, dashing2::SketchingResult sketch2, bool cmp_objects);
+int dashing2_main(int argc, char **argv, DistanceCallback callback, std::shared_ptr<dashing2::SketchingResult> sketch1, std::shared_ptr<dashing2::SketchingResult> sketch2, bool cmp_objects);
 
 #endif
