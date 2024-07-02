@@ -235,7 +235,7 @@ void load_results_objects(Dashing2DistOptions &opts, SketchingResult &result, Sk
     std::copy(sketch2.signatures_.begin(), sketch2.signatures_.end(), result.signatures_.begin() + sketch1.signatures_.size());
     std::cout << "Merged signatures" << std::endl;
 
-    /*
+    
     // Resize kmercountfiles and kmers, if they are used
     if (!sketch1.kmercountfiles_.empty() || !sketch2.kmercountfiles_.empty()) {
         result.kmercountfiles_.reserve(sketch1.kmercountfiles_.size() + sketch2.kmercountfiles_.size());
@@ -253,7 +253,7 @@ void load_results_objects(Dashing2DistOptions &opts, SketchingResult &result, Sk
         result.kmercounts_.reserve(sketch1.kmercounts_.size() + sketch2.kmercounts_.size());
         result.kmercounts_.insert(result.kmercounts_.end(), sketch1.kmercounts_.begin(), sketch1.kmercounts_.end());
         result.kmercounts_.insert(result.kmercounts_.end(), sketch2.kmercounts_.begin(), sketch2.kmercounts_.end());
-    }*/
+    }
 
     // Update the number of queries
     result.nqueries(2);  // Set the number of sketches or queries involved
