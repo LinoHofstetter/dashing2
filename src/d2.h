@@ -325,7 +325,7 @@ void set_verbosity(Verbosity level); //Function to expose verbosity so it can be
 static bool seqs_in_memory = false;
 
 //SketchingResult definition with deleted copy instructor
-/*struct SketchingResult {
+struct SketchingResult {
     SketchingResult(): sequences_(seqs_in_memory) {}
     SketchingResult(SketchingResult &&o) = default;
     SketchingResult(const SketchingResult &o) = delete;
@@ -360,76 +360,6 @@ static bool seqs_in_memory = false;
     void print();
     size_t nqueries() const {return nq;}
     void nqueries(size_t nqnew) {nq = nqnew;}
-};*/
-
-//shared pointer approach, don't really understand this yet
-struct SketchingResult {
-    SketchingResult() 
-        : sequences_(std::make_shared<tmpseq::MemoryOrRAMSequences>(seqs_in_memory)),
-          signatures_(std::make_shared<mm::vector<RegT>>()),
-          kmers_(std::make_shared<mm::vector<uint64_t>>()) {}
-
-    SketchingResult(SketchingResult &&o) = default;
-
-    SketchingResult(const SketchingResult &o) 
-        : names_(o.names_),
-          destination_files_(o.destination_files_),
-          kmerfiles_(o.kmerfiles_),
-          kmercountfiles_(o.kmercountfiles_),
-          nperfile_(o.nperfile_),
-          cardinalities_(o.cardinalities_),
-          sequences_(o.sequences_), // Shared pointer copy
-          signatures_(o.signatures_), // Shared pointer copy
-          kmers_(o.kmers_), // Shared pointer copy
-          kmercounts_(o.kmercounts_),
-          nq(o.nq) {}
-
-    SketchingResult &operator=(SketchingResult &&o) = default;
-
-    SketchingResult &operator=(const SketchingResult &o) {
-        if (this != &o) {
-            names_ = o.names_;
-            destination_files_ = o.destination_files_;
-            kmerfiles_ = o.kmerfiles_;
-            kmercountfiles_ = o.kmercountfiles_;
-            nperfile_ = o.nperfile_;
-            cardinalities_ = o.cardinalities_;
-            sequences_ = o.sequences_; // Shared pointer copy
-            signatures_ = o.signatures_; // Shared pointer copy
-            kmers_ = o.kmers_; // Shared pointer copy
-            kmercounts_ = o.kmercounts_;
-            nq = o.nq;
-        }
-        return *this;
-    }
-
-    std::vector<std::string> names_; // List of files, potentially multiple per line
-    std::vector<std::string> destination_files_; // Contains sketches/kmer-sets,kmer-sequences etc.
-    std::vector<std::string> kmerfiles_; // Contains file-paths for k-mers, if saved.
-    std::vector<std::string> kmercountfiles_; // Contains k-mer counts, if saved
-    // kmerfiles and kmercountfiles are unset for bed files
-    std::vector<uint32_t> nperfile_; // This is either empty (in which case each filename/row has its own sketch)
-                                     // Or, this contains a list indicating the number of sketches created for each file/line
-    std::vector<double> cardinalities_; // Apparently holds the cardinalities of a particular input sequence
-    std::shared_ptr<tmpseq::MemoryOrRAMSequences> sequences_; // Using shared_ptr
-    // This is only filled if sspace is SPACE_EDIT_DISTANCE and
-    // we are using LSH only for pre-filtering but performing exact distance calculations via edit distance
-    std::shared_ptr<mm::vector<RegT>> signatures_; // Using shared_ptr
-    // TODO: mmap these matrices to reduce peak memory footprint
-    std::shared_ptr<mm::vector<uint64_t>> kmers_; // Using shared_ptr
-    std::vector<float> kmercounts_; // Contains counts for k-mers, if desired
-    // This contains the k-mers corresponding to signatures, if asked for 128-bit k-mers, these are stored in chunks of 2 64-bit integers.
-    size_t nq = 0;
-    size_t total_seqs() const {
-        // Sum of nperfile if nonempty
-        // otherwise, just one sequence/bag of k-mers per "name"
-        return nperfile_.size() ? std::accumulate(nperfile_.begin(), nperfile_.end(), size_t(0)) : names_.size();
-    }
-    std::string str() const;
-    static SketchingResult merge(SketchingResult *start, size_t n, const std::vector<std::string> &);
-    void print();
-    size_t nqueries() const { return nq; }
-    void nqueries(size_t nqnew) { nq = nqnew; }
 };
 
 
