@@ -188,7 +188,7 @@ int cmp_presketched(const std::string &sketch1, const std::string &sketch2) {
     return distance_0_1;
 }
 
-int cmp_objects(std::shared_ptr<dashing2::SketchingResult> sketch1, std::shared_ptr<dashing2::SketchingResult> sketch2) {
+int cmp_sketches(std::shared_ptr<dashing2::SketchingResult> sketch1, std::shared_ptr<dashing2::SketchingResult> sketch2) {
     float distance_0_1 = 0.0;
     DistanceCallback callback = [&](size_t i, size_t j, float distance) {
         if (i == 0 && j == 1) {
@@ -217,11 +217,10 @@ int cmp_objects(std::shared_ptr<dashing2::SketchingResult> sketch1, std::shared_
     argv.push_back(nullptr); // Ensure null-termination
     int argc = argv.size() - 1; // Don't count the null terminator
 
-    std::cout << "About to call dashing2_main in cmp_objects" << std::endl;
     int result = dashing2_main(argc, argv.data(), callback, sketch1, sketch2, true); 
     
     if (result != 0) {
-       throw std::runtime_error("cmp_objects() failed"); 
+       throw std::runtime_error("cmp_sketches() failed"); 
     }
 
     std::cout << "CMP-OBJECTS DISTANCE = " << distance_0_1 << std::endl;
