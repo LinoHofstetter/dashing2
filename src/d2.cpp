@@ -188,7 +188,7 @@ int cmp_presketched(const std::string &sketch1, const std::string &sketch2) {
     return distance_0_1;
 }
 
-int cmp_sketches(std::shared_ptr<dashing2::SketchingResult> sketch1, std::shared_ptr<dashing2::SketchingResult> sketch2) {
+float cmp_sketches(std::shared_ptr<dashing2::SketchingResult> sketch1, std::shared_ptr<dashing2::SketchingResult> sketch2) {
     float distance_0_1 = 0.0;
     DistanceCallback callback = [&](size_t i, size_t j, float distance) {
         if (i == 0 && j == 1) {
