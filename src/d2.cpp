@@ -207,29 +207,24 @@ int dashing2_main(int argc, char **argv, DistanceCallback callback, dashing2::Sk
         std::cout << "Inside dashing2_main, about to call command functions based on arguments" << std::endl;
     }*/
     std::string cmd(std::filesystem::absolute(std::filesystem::path(argv[0])));
-    std::cout << "d2: 1" << std::endl;
     //for(char **s = (argv + 1); *s; cmd += std::string(" ") + *s++);
     // Simplified loop for debugging
     for (int i = 1; i < argc; ++i) {
         if (argv[i]) {
             cmd += " " + std::string(argv[i]);
-            std::cout << "Adding argument: " << argv[i] << std::endl; // Debug print
+            //std::cout << "Adding argument: " << argv[i] << std::endl; // Debug print
         }
     }
 
-    std::cout << "d2: 2" << std::endl;
     std::fprintf(stderr, "#Calling Dashing2 version %s with command '%s'\n", DASHING2_VERSION, cmd.data());
-    std::cout << "d2: 3" << std::endl;
     if(argc > 1) {
         if (verbosity >= Verbosity::DEBUG){ //added for debugging
             std::cout << "Inside argc > 1 in dashing2_main" << std::endl;
         }
         if(std::strcmp(argv[1], "sketch") == 0)
             return sketch_main(argc - 1, argv + 1);
-        std::cout << "d2: 4" << std::endl;
         if(std::strcmp(argv[1], "cmp") == 0 || std::strcmp(argv[1], "dist") == 0) {
-            std::cout << "d2: 5" << std::endl;
-            if (verbosity >= Verbosity::DEBUG){ //added for debugging
+            if (verbosity >= Verbosity::DEBUG){ //This causes segmentation faults (move approach)
                 std::cout << "Sketch 1 name: " << sketch1.names_[0] << std::endl;
                 std::cout    << ", cardinality: " << sketch1.cardinalities_[0] << std::endl;
                 std::cout    << ", signatures[1023]: " << sketch1.signatures_[1023] << std::endl;
