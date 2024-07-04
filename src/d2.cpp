@@ -248,13 +248,6 @@ int dashing2_main(int argc, char **argv, DistanceCallback callback, std::shared_
     }
     std::string cmd(std::filesystem::absolute(std::filesystem::path(argv[0])));
     for(char **s = (argv + 1); *s; cmd += std::string(" ") + *s++);
-    // Simplified loop for debugging
-    /*for (int i = 1; i < argc; ++i) {
-        if (argv[i]) {
-            cmd += " " + std::string(argv[i]);
-            //std::cout << "Adding argument: " << argv[i] << std::endl; // Debug print
-        }
-    }*/
     std::fprintf(stderr, "#Calling Dashing2 version %s with command '%s'\n", DASHING2_VERSION, cmd.data());
     if(argc > 1) {
         if (verbosity >= Verbosity::DEBUG){ //added for debugging
@@ -265,7 +258,6 @@ int dashing2_main(int argc, char **argv, DistanceCallback callback, std::shared_
         if(std::strcmp(argv[1], "cmp") == 0 || std::strcmp(argv[1], "dist") == 0) {
             return cmp_main(argc - 1, argv + 1, callback, *sketch1, *sketch2, cmp_objects);
         }
-            
         if(std::strcmp(argv[1], "wsketch") == 0)
             return wsketch_main(argc - 1, argv + 1);
         if(std::strcmp(argv[1], "contain") == 0)
