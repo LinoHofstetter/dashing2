@@ -371,6 +371,7 @@ int cmp_main(int argc, char **argv, DistanceCallback callback, SketchingResult &
     SketchingResult result;
     if (verbosity >= Verbosity::DEBUG){
         std::cout << "Inside cmp_main - about to check presketched property" << std::endl;
+        std::cout << "cmp_objects = " << cmp_objects << std::endl;
     }
     if(presketched && !cmp_objects) { //keep functionality if we don't want to compare objects directly
         std::set<std::string> suffixset;
