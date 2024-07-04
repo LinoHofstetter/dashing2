@@ -188,7 +188,7 @@ int cmp_presketched(const std::string &sketch1, const std::string &sketch2) {
     return distance_0_1;
 }
 
-float cmp_sketches(std::shared_ptr<dashing2::SketchingResult> sketch1, std::shared_ptr<dashing2::SketchingResult> sketch2) {
+float cmp_sketches(std::shared_ptr<dashing2::SketchingResult> sketch1, std::shared_ptr<dashing2::SketchingResult> sketch2, std::string path1, std::string path2) {
     float distance_0_1 = 0.0;
     DistanceCallback callback = [&](size_t i, size_t j, float distance) {
         if (i == 0 && j == 1) {
@@ -200,8 +200,8 @@ float cmp_sketches(std::shared_ptr<dashing2::SketchingResult> sketch1, std::shar
         "dashing2",                // Command 
         "cmp",                     // Subcommand
         "--presketched",           // Flag to indicate pre-sketched files
-        "EMPTY",  // Path to first precomputed sketch -> not needed in implementation, name is stored in names_ field after loading from disc
-        "EMPTY"  // Path to second precomputed sketch -> same here
+        path1,  // Path to first precomputed sketch -> not needed in implementation, name is stored in names_ field after loading from disc
+        path2  // Path to second precomputed sketch -> same here
     };
 
     std::vector<char*> argv;
@@ -263,15 +263,6 @@ int dashing2_main(int argc, char **argv, DistanceCallback callback, std::shared_
         if(std::strcmp(argv[1], "sketch") == 0)
             return sketch_main(argc - 1, argv + 1);
         if(std::strcmp(argv[1], "cmp") == 0 || std::strcmp(argv[1], "dist") == 0) {
-            if (verbosity >= Verbosity::DEBUG){ //added for debugging
-                std::cout << "Sketch 1 name: " << sketch1->names_[0] << std::endl;
-                std::cout    << ", cardinality: " << sketch1->cardinalities_[0] << std::endl;
-                std::cout    << ", signatures[1023]: " << sketch1->signatures_[1023] << std::endl;
-                std::cout    << ", signatures size: " << sketch1->signatures_.size() << std::endl;
-                std::cout    << ", begin: " << *(sketch1->signatures_.begin()) << std::endl;
-                std::cout    << ", end: " << *(sketch1->signatures_.end() - 1) << std::endl;
-                std::cout << "Inside cmp_branch in dashing2_main, about to call cmp_main" << std::endl;
-            }
             return cmp_main(argc - 1, argv + 1, callback, *sketch1, *sketch2, cmp_objects);
         }
             

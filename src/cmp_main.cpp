@@ -428,6 +428,9 @@ int cmp_main(int argc, char **argv, DistanceCallback callback, SketchingResult &
         }
         std::string sketch_path = sketch1.names_.empty() ? "" : sketch1.names_[0];
         if (!sketch_path.empty()) {
+            if (verbosity >= Verbosity::DEBUG){
+                std::cout << "sketch_path: " << sketch_path << std::endl;
+            }
             std::set<std::string> suffixset;
             suffixset.insert(sketch_path.substr(sketch_path.find_last_of('.'), std::string::npos));
             std::string suf = *suffixset.begin();
