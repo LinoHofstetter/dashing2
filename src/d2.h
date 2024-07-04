@@ -334,6 +334,7 @@ struct SketchingResult {
     SketchingResult &operator=(const SketchingResult &o) = delete; //This line is responsible for deletion of the copy instructor
 
     std::vector<std::string> names_; // List of files, potentially multiple per line
+    std::vector<std::string> groupmembers_;
     std::vector<std::string> destination_files_; // Contains sketches/kmer-sets,kmer-sequences etc.
     std::vector<std::string> kmerfiles_;         // Contains file-paths for k-mers, if saved.
     std::vector<std::string> kmercountfiles_;    // Contains k-mer counts, if saved

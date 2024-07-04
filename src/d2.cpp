@@ -223,7 +223,7 @@ float cmp_sketches(std::shared_ptr<dashing2::SketchingResult> sketch1, std::shar
        throw std::runtime_error("cmp_sketches() failed"); 
     }
 
-    std::cout << "CMP-OBJECTS DISTANCE = " << distance_0_1 << std::endl;
+    //std::cout << "CMP-OBJECTS DISTANCE = " << distance_0_1 << std::endl;
 
     return distance_0_1;
 }
