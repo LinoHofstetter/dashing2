@@ -188,7 +188,7 @@ int cmp_presketched(const std::string &sketch1, const std::string &sketch2) {
     return distance_0_1;
 }
 
-float cmp_sketches(std::shared_ptr<dashing2::SketchingResult> sketch1, std::shared_ptr<dashing2::SketchingResult> sketch2, std::string path1, std::string path2) {
+float cmp_sketches(std::shared_ptr<dashing2::SketchingResult> sketch1, std::shared_ptr<dashing2::SketchingResult> sketch2) {
     float distance_0_1 = 0.0;
     DistanceCallback callback = [&](size_t i, size_t j, float distance) {
         if (i == 0 && j == 1) {
@@ -200,8 +200,8 @@ float cmp_sketches(std::shared_ptr<dashing2::SketchingResult> sketch1, std::shar
         "dashing2",                // Command 
         "cmp",                     // Subcommand
         "--presketched",           // Flag to indicate pre-sketched files
-        path1,  // Path to first precomputed sketch -> not needed in implementation, name is stored in names_ field after loading from disc
-        path2  // Path to second precomputed sketch -> same here
+        "EMPTY_PATH",  // Path to first precomputed sketch -> not needed in implementation, name is stored in names_ field after loading from disc
+        "EMPTY_PATH"  // Path to second precomputed sketch -> same here
     };
 
     std::vector<char*> argv;
