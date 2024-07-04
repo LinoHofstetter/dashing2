@@ -427,7 +427,8 @@ int cmp_main(int argc, char **argv, DistanceCallback callback, SketchingResult &
             std::cout << "about to call load_results" << std::endl;
         }
         load_results(distopts, result, paths);
-    } else if (presketched && cmp_objects){ //New case for when we want to compare SketchingResult Objects directly
+    } //else if (presketched && cmp_objects) { //New case for when we want to compare SketchingResult Objects directly
+    else if (cmp_objects){ //Because issues with calling cmp_sketches() multiple times, I removed presketched flag here (see notes 4.07.24)
         if(verbosity >= Verbosity::DEBUG) {
             std::cout << "inside second branch in cmp_main presketched check" << std::endl;
             std::string sketch_path = sketch1.names_.empty() ? "EMPTY SKETCH PATH (case2: cmp_main)" : sketch1.names_[0];
