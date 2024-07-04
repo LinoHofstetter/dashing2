@@ -374,6 +374,9 @@ int cmp_main(int argc, char **argv, DistanceCallback callback, SketchingResult &
         std::cout << "cmp_objects = " << cmp_objects << std::endl;
     }
     if(presketched && !cmp_objects) { //keep functionality if we don't want to compare objects directly
+        if (verbosity >= Verbosity::DEBUG){
+            std::cout << "inside presketched && !cmp_objects" << std::endl;
+        }
         std::set<std::string> suffixset;
         for(const auto &p: paths) {
             suffixset.insert(p.substr(p.find_last_of('.'), std::string::npos));
@@ -419,6 +422,9 @@ int cmp_main(int argc, char **argv, DistanceCallback callback, SketchingResult &
                 distopts.kmer_result(FULL_MMER_COUNTDICT);
             } else distopts.kmer_result(FULL_MMER_SEQUENCE);
             distopts.use128(true);
+        }
+        if (verbosity >= Verbosity::DEBUG){
+            std::cout << "about to call load_results" << std::endl;
         }
         load_results(distopts, result, paths);
     } else if (presketched && cmp_objects){ //New case for when we want to compare SketchingResult Objects directly
@@ -481,6 +487,9 @@ int cmp_main(int argc, char **argv, DistanceCallback callback, SketchingResult &
             std::cout << "Result names: " << result.names_[0] << ", " << result.names_[1] << ", cardinality: " << result.cardinalities_[0] << ", signatures size: " << result.signatures_.size() << std::endl;
         }
     } else {
+        if (verbosity >= Verbosity::DEBUG){
+            std::cout << "About to call SKETCH_CORE" << std::endl;
+        }
         sketch_core(result, distopts, paths, outfile);
         result.nqueries(nq);
     }
@@ -495,7 +504,6 @@ int cmp_main(int argc, char **argv, DistanceCallback callback, SketchingResult &
     if (verbosity >= Verbosity::DEBUG) {
         std::cout << "About to call cmp_core" << std::endl;
     }
-    std::cout << "About to call cmp_core" << std::endl;
     cmp_core(distopts, result, callback);
     return 0;
 }
