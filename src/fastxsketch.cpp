@@ -449,7 +449,7 @@ do {\
 #undef FUNC_FE
             }, path);
         };
-        if(
+        if( //Part to write to file apparently
             (opts.sspace_ == SPACE_MULTISET || opts.sspace_ == SPACE_PSET || opts.kmer_result_ == FULL_MMER_SET || opts.kmer_result_ == FULL_MMER_COUNTDICT)
         )
         {
@@ -579,47 +579,57 @@ do {\
             std::free(dptr);
             std::fclose(ofp);
         } else if(opts.kmer_result_ == ONE_PERM || opts.kmer_result_ == FULL_SETSKETCH) {
+            //Check if caching is enabled and try to read from file
             std::FILE * ofp{nullptr};
             if((opts.cache_sketches_) && (ofp = bfopen(destination.data(), "wb")) == nullptr)
                 THROW_EXCEPTION(std::runtime_error(std::string("Failed to open file ") + destination + " for writing sketch."));
+            //Check if sketch is empty
             if(opss.empty() && fss.empty() && cfss.empty()) THROW_EXCEPTION(std::runtime_error("Both opss and fss are empty\n"));
             const size_t opsssz = opss.size();
             auto &cret = ret.cardinalities_[myind];
-            if(opsssz) {
-                assert(opss.size() > unsigned(tid));
+            if(opsssz) { //opsssz stores size of opss 
+                assert(opss.size() > unsigned(tid)); //assert opps has element at position tid
                 assert(opss.at(tid).total_updates() == 0);
                 auto p = &opss[tid];
-                perf_for_substrs([p](auto hv) {p->update(hv);});
+                perf_for_substrs([p](auto hv) {p->update(hv);}); //update sketch by calling update function
                 assert(ret.cardinalities_.size() > i);
-                cret = p->getcard();
+                cret = p->getcard(); //compute and store cardinality in cret
             } else {
                 if(opts.sketch_compressed_set) {
-                    std::visit([&](auto &x) {
+                    std::visit([&](auto &x) { //apply update
                         perf_for_substrs([&x](auto hv) {
                             x.update(hv);
                         });
-                        cret = x.cardinality();
+                        cret = x.cardinality(); //compute and store cardinality in cret
                     }, cfss.at(tid));
                 } else {
                     perf_for_substrs([p=&fss[tid]](auto hv) {p->update(hv);});
                     cret = fss[tid].getcard();
                 }
             }
-            if(ofp) checked_fwrite(ofp, &cret, sizeof(double));
+            if(ofp) checked_fwrite(ofp, &cret, sizeof(double)); //write cardinality to file
             std::fflush(ofp);
             const uint64_t *ids = nullptr;
             const uint32_t *counts = nullptr;
             // Update this and VSetSketch above to filter down
             const RegT *ptr = opsssz ? opss[tid].data(): fss.size() ? fss[tid].data(): getdata(cfss[tid]);
             assert(ptr);
+            //Here comes the part to write registers to file
             if(opts.save_kmers_)
                 ids = opsssz ? opss[tid].ids().data(): fss[tid].ids().data();
             if(opts.save_kmercounts_)
                 counts = opsssz ? opss[tid].idcounts().data(): fss[tid].idcounts().data();
             if(opts.sketch_compressed_set) {
+                if (verbosity >= Verbosity::DEBUG){
+                    std::cout << "About to write array with a,b,etc. to file" << std::endl;
+                }
+                //writes an array containing compressed_a_, compressed_b_, fd_level_, and sketchsize_ to the file. -> IMPORTANT
                 std::array<long double, 4> arr{opts.compressed_a_, opts.compressed_b_, static_cast<long double>(opts.fd_level_), static_cast<long double>(opts.sketchsize_)};
                 if(ofp) checked_fwrite(arr.data(), sizeof(long double), arr.size(), ofp);
                 if(opts.fd_level_ == 0.5) {
+                    if (verbosity >= Verbosity::DEBUG){
+                        std::cout << "Process data as NibbleSetS" << std::endl;
+                    }
                     const uint8_t *srcptr = std::get<NibbleSetS>(cfss[tid]).data();
                     for(size_t i = 0; i < opts.sketchsize_; i += 2) {
                         uint8_t reg = (srcptr[i] << 4) | srcptr[i + 1];
@@ -629,8 +639,12 @@ do {\
                     if(ofp) checked_fwrite(ptr, sizeof(RegT), ss >> sigshift, ofp);
                 }
             } else {
+                if (verbosity >= Verbosity::DEBUG){
+                        std::cout << "Writing to file UNCOMPRESSED" << std::endl;
+                    }
                 if(ofp) checked_fwrite(ofp, ptr, ss * sizeof(RegT));
             }
+            //Also writing registers to SketchingResult object
             if(ofp) std::fclose(ofp);
             if(ptr && ret.signatures_.size()) {
                 if(!opts.sketch_compressed_set) {

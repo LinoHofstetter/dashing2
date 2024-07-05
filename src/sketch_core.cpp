@@ -153,7 +153,7 @@ SketchingResult &sketch_core(SketchingResult &result, Dashing2DistOptions &opts,
     //Handling file writing for other cases
     else {
         if (verbosity >= Verbosity::DEBUG) {
-            std::cout << "opts.dytpe_ = NOT FOUND" << std::endl;
+            std::cout << "opts.kmer_result_ != FULL_MMER_SEQUENCE" << std::endl;
         }
         if(outfile.size() && outfile != "/dev/stdout" && outfile != "-") {
             // This should not overlap with the memory mapped for result.signatures_
