@@ -311,6 +311,7 @@ public:
     const FT *data() const {return data_.get();}
     FT *data() {return data_.get();}
     CSetSketch(size_t m, bool track_ids=false, bool track_counts=false, FT maxv=std::numeric_limits<FT>::max()): m_(m), ls_(m_), mvt_(m_) {
+        std::cout << "CONSTRUCTED CSETSKETCH OBJECT" << std::endl; //added for debug
         if(m > 0xFFFFFFFFull) {
             throw std::invalid_argument("CSetSketch's maximum sketch size is 2^32/0xFFFFFFFFu/4294967295.");
         }
@@ -321,6 +322,7 @@ public:
         //generate_betas();
     }
     CSetSketch(const CSetSketch &o): m_(o.m_), data_(allocate(o.m_)), ls_(m_), mvt_(m_, o.mvt_.mv()), ids_(o.ids_), idcounts_(o.idcounts_) {
+        std::cout << "CONSTRUCTED CSETSKETCH OBJECT" << std::endl; //added for debug
         mvt_.assign(data_.get(), m_, o.mvt_.mv());
         std::copy(o.data_.get(), &o.data_[2 * m_ - 1], data_.get());
         //generate_betas();
@@ -657,6 +659,7 @@ public:
     auto &lowkh() {return lowkh_;}
     const auto &lowkh() const {return lowkh_;}
     SetSketch(size_t m, FT b, FT a, QType q, bool track_ids = false): m_(m), a_(a), b_(b), ainv_(1./ a), logbinv_(1. / std::log1p(b_ - 1.)), q_(q), ls_(m_), lowkh_(m) {
+        std::cout << "CONSTRUCTED SETSKETCH OBJECT" << std::endl; //added for debug
         ResT *p = allocate(m_);
         data_.reset(p);
         std::fill(p, p + m_, static_cast<ResT>(0));
@@ -668,6 +671,7 @@ public:
         }
     }
     SetSketch(const SetSketch &o): m_(o.m_), a_(o.a_), b_(o.b_), ainv_(o.ainv_), logbinv_(o.logbinv_), q_(o.q_), ls_(m_), lowkh_(m_), lbetas_(o.lbetas_) {
+        std::cout << "CONSTRUCTED SETSKETCH OBJECT" << std::endl; //added for debug
         ResT *p = allocate(m_);
         data_.reset(p);
         lowkh_.assign(p, m_, b_);
@@ -694,6 +698,7 @@ public:
     template<typename OFT, typename=std::enable_if_t<std::is_arithmetic_v<OFT>>>
     INLINE void update(const uint64_t id, OFT) {update(id);}
     void update(const uint64_t id) {
+        std::cout << "CALLED UPDATE IN SETSKETCH OBJECT" << std::endl; //added for debug
         using GenFT = std::conditional_t<(sizeof(FT) <= 8), double, long double>;
         GenFT carry = 0.;
         mycard_ = -1.;
@@ -731,6 +736,7 @@ public:
         return std::tie(b_, a_, m_, q_) == std::tie(o.b_, o.a_, o.m_, o.q_);
     }
     double harmean(const SetSketch<ResT, FT> *ptr=static_cast<const SetSketch<ResT, FT> *>(nullptr)) const {
+        std::cout << "CALLED HARMEAN IN SETSKETCH OBJECT" << std::endl; //added for debug
         static std::unordered_map<FT, std::vector<FT>> powers;
         if constexpr(sizeof(ResT) >= 4) {
             dashing2::flat_hash_map<ResT, uint32_t> counts;
@@ -766,11 +772,13 @@ public:
         }
     }
     double jaccard_by_ix(const SetSketch<ResT, FT> &o) const {
+        std::cout << "CALLED JACCARD IN SETSKETCH OBJECT" << std::endl; //added for debug
         auto us = union_size(o);
         auto mycard = getcard(), ocard = o.getcard();
         return (mycard + ocard - us) / us;
     }
     double union_size(const SetSketch<ResT, FT> &o) const {
+        std::cout << "CALLED UNIONSIZE IN SETSKETCH OBJECT" << std::endl; //added for debug
         double num = m_ * (1. - 1. / b_) * logbinv_ * ainv_;
         return num / harmean(&o);
     }
@@ -780,6 +788,7 @@ public:
         return num / harmean();
     }
     void merge(const SetSketch<ResT, FT> &o) {
+        std::cout << "CALLED MERGE IN SETSKETCH OBJECT" << std::endl; //added for debug
         if(!same_params(o)) throw std::runtime_error("Can't merge sets with differing parameters");
         std::transform(data(), data() + m_, o.data(), data(), [](auto x, auto y) {return std::max(x, y);});
         mycard_ = -1.;
