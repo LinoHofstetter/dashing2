@@ -190,11 +190,13 @@ FastxSketchingResult &fastx2sketch(FastxSketchingResult &ret, Dashing2Options &o
         for(size_t i = 0; i < nt; ++i)
             x.emplace_back(ss);
     };
+    //initialize containers for sketches
     auto make_save = [&](auto &x) {
         x.reserve(nt);
         for(size_t i = 0; i < nt; ++i)
             x.emplace_back(ss, opts.save_kmers_, opts.save_kmercounts_);
     };
+    //opts.sspace_ defines the type of sketching algorithm used
     if(opts.sspace_ == SPACE_SET) {
         if (verbosity >= Verbosity::DEBUG){
             std::cout << "opts.sspace_ == SPACE_SET" << std::endl;
@@ -204,7 +206,7 @@ FastxSketchingResult &fastx2sketch(FastxSketchingResult &ret, Dashing2Options &o
                 std::cout << "opts.kmer_result_ == ONE_PERM" << std::endl;
             }
             make(opss);
-            for(auto &x: opss) x.set_mincount(opts.count_threshold_);
+            for(auto &x: opss) x.set_mincount(opts.count_threshold_); //filter out infrequent k-mers
         } else if(opts.kmer_result_ == FULL_SETSKETCH) { //Here the space for the registers is reserved
             if (verbosity >= Verbosity::DEBUG){
                 std::cout << "opts.kmer_result_ == FULL_SETSKETCH" << std::endl;
@@ -269,7 +271,10 @@ FastxSketchingResult &fastx2sketch(FastxSketchingResult &ret, Dashing2Options &o
             THROW_EXCEPTION(std::invalid_argument("Space edit distance is only available in parse-by-seq mode, as it is only defined on strings rather than string collections."));
         }
     }
-    while(ctrs.size() < nt) ctrs.emplace_back(opts.cssize());
+    while(ctrs.size() < nt) ctrs.emplace_back(opts.cssize()); //The ctrs vector is being populated with Counter objects until its size matches the number of threads (nt). The Counter objects are initialized with the size specified by opts.cssize().
+    if (verbosity >= Verbosity::DEBUG){
+        std::cout << "About to reset sketch data structures for tid" << std::endl;
+    }
 #define __RESET(tid) do { \
         if(!opss.empty()) opss[tid].reset();\
         else if(!fss.empty()) fss[tid].reset();\
@@ -293,6 +298,7 @@ FastxSketchingResult &fastx2sketch(FastxSketchingResult &ret, Dashing2Options &o
             kmernamesoutpath = kmeroutpath + ".names.txt";
         }
     }
+    //setup output files
     if(kmeroutpath.size()) {
         std::FILE *fp = bfopen(kmeroutpath.data(), "w");
         uint32_t dtype = (uint32_t)opts.input_mode() | (int(opts.canonicalize()) << 8);
@@ -352,6 +358,12 @@ FastxSketchingResult &fastx2sketch(FastxSketchingResult &ret, Dashing2Options &o
     }
     OMP_PFOR_DYN
     for(size_t i = 0; i < nitems; ++i) {
+        /* The loop iterates over nitems, which represents the number of items to process.
+            In a parallel execution environment (OMP_ONLY), it fetches the current thread ID.
+            myind is set based on whether filesizes is provided. This is likely an index into the paths vector.
+            mss is calculated as the sketch size (ss) multiplied by myind, determining the starting position in the signatures vector.
+            path is the file path to process.
+        */
         int tid = 0;
         OMP_ONLY(tid = omp_get_thread_num();)
         //const int tid = OMP_ELSE(omp_get_thread_num(), 0);
@@ -360,6 +372,8 @@ FastxSketchingResult &fastx2sketch(FastxSketchingResult &ret, Dashing2Options &o
         const size_t mss = ss * myind;
         auto &path = paths[myind];
         //std::fprintf(stderr, "parsing from path = %s\n", path.data());
+        /*Sets up the destination paths for saving the sketch, k-mer counts, and k-mer IDs.
+        */
         std::string &destination = ret.destination_files_[myind];
         destination = makedest(opts, path, opts.kmer_result_ == FULL_MMER_COUNTDICT);
         const std::string destination_prefix = destination.substr(0, destination.find_last_of('.'));
@@ -367,6 +381,9 @@ FastxSketchingResult &fastx2sketch(FastxSketchingResult &ret, Dashing2Options &o
         kmer_destination_prefix = kmer_destination_prefix.substr(0, kmer_destination_prefix.find_last_of('.'));
         std::string destkmercounts = destination_prefix + ".kmercounts.f64";
         std::string destkmer = kmer_destination_prefix + ".kmer.u64";
+        /*Checks if the sketch, k-mer counts, and k-mer IDs are already cached using check_compressed.
+            If caching conditions are met, attempts to load the cached data from the files.
+        */
         int dkt, dct, dft;
         bool dkif = check_compressed(destkmer, dkt);
         const bool destisfile = check_compressed(destination, dft);
@@ -380,7 +397,8 @@ FastxSketchingResult &fastx2sketch(FastxSketchingResult &ret, Dashing2Options &o
            (!opts.save_kmers_ || dkif) &&
            ((!opts.save_kmercounts_ && opts.kmer_result_ != FULL_MMER_COUNTDICT) || dkcif)
         )
-        {
+        {   //Cache handling logic
+            //Load Cached data
             if(opts.kmer_result_ < FULL_MMER_SET) {
                 if(ret.signatures_.size()) {
                     if(opts.sketch_compressed_set) {
@@ -423,7 +441,7 @@ FastxSketchingResult &fastx2sketch(FastxSketchingResult &ret, Dashing2Options &o
                 ret.kmerfiles_[myind] = destkmer;
             }
             continue;
-        } else {
+        } else { //Skip caching
 #ifndef NDEBUG
             std::fprintf(stderr, "We skipped caching because with %d as cache sketches\n", opts.cache_sketches_);
             std::fprintf(stderr, "destisfile: %d. is countdict %d. is kmerfile %d\n", destisfile, opts.kmer_result_ == FULL_MMER_COUNTDICT, dkif);
@@ -432,6 +450,7 @@ FastxSketchingResult &fastx2sketch(FastxSketchingResult &ret, Dashing2Options &o
         }
         perform_sketch:
         __RESET(tid);
+        //SKETCH COMPUTATION
         auto perf_for_substrs = [&](const auto &func) __attribute__((__always_inline__)) {
             for_each_substr([&](const std::string &subpath) {
                 auto lfunc = [&](auto x) __attribute__((__always_inline__)) {
@@ -475,6 +494,7 @@ do {\
             }, path);
         };
         if( //Part to write to file apparently
+            //Processing results and write to file
             (opts.sspace_ == SPACE_MULTISET || opts.sspace_ == SPACE_PSET || opts.kmer_result_ == FULL_MMER_SET || opts.kmer_result_ == FULL_MMER_COUNTDICT)
         )
         {
@@ -513,6 +533,7 @@ do {\
                     std::copy(keys.begin(), keys.end(), (BKRegT *)&ret.signatures_[mss]);
                 }
             }
+            //write results to file
             std::FILE * ofp{nullptr};
             if(opts.cache_sketches_ || opts.kmer_result_  == FULL_MMER_SET || opts.kmer_result_ == FULL_MMER_COUNTDICT) {
                 std::fprintf(stderr, "Writing saved sketch to %s\n", destination.data());
@@ -577,7 +598,8 @@ do {\
                 }
             }
             std::fclose(ofp);
-        } else if(opts.kmer_result_ == FULL_MMER_SEQUENCE) {
+        } //handling full_MMER
+        else if(opts.kmer_result_ == FULL_MMER_SEQUENCE) {
             if (verbosity >= Verbosity::DEBUG){
                 std::cout << "opts.kmer_result_ == FULL_MMER_SEQUENCE" << std::endl;
             }
@@ -609,7 +631,8 @@ do {\
             ret.cardinalities_[myind] = l;
             std::free(dptr);
             std::fclose(ofp);
-        } else if(opts.kmer_result_ == ONE_PERM || opts.kmer_result_ == FULL_SETSKETCH) {
+        } //Handling ONE_PERM, FULL_SETSKETCH
+        else if(opts.kmer_result_ == ONE_PERM || opts.kmer_result_ == FULL_SETSKETCH) {
             if (verbosity >= Verbosity::DEBUG){
                 std::cout << "opts.kmer_result_ == ONE_PERM || FULL_SETSKETCH" << std::endl;
             }
