@@ -152,6 +152,9 @@ public:
         reset();
     }
     void set_mincount(double v) {
+        if (verbosity >= Verbosity::DEBUG){
+            std::cout << "Calling set_mincount() inside LazyOnePermSetSketch" << std::endl;
+        }
         if(v > 1.) {
             mincount_ = v;
             potentials_.resize(size());
@@ -174,6 +177,9 @@ public:
         return shasher_(uint64_t(x));
     }
     INLINE void update(const T oid) {
+        if (verbosity >= Verbosity::DEBUG){
+            std::cout << "Calling update() inside LazyOnePermSetSketch" << std::endl;
+        }
         ++total_updates_;
         const T id = hasher_(oid);
         const size_t hashid = id; // shasher_(id);
@@ -219,6 +225,9 @@ public:
     static_assert(omul != 0.L, "sanity check");
     template<typename T2=SigT>
     std::vector<T2> to_sigs() const {
+        if (verbosity >= Verbosity::DEBUG){
+            std::cout << "Calling to_sigs() inside LazyOnePermSetSketch" << std::endl;
+        }
         std::vector<T2> ret(size());
         std::transform(registers_.begin(), registers_.end(), ret.begin(), [sz2=size()/2](auto x) -> T2 {
             if(std::is_integral_v<T2>) {
@@ -230,6 +239,9 @@ public:
         return ret;
     }
     void reset() {
+        if (verbosity >= Verbosity::DEBUG){
+            std::cout << "Calling reset() inside LazyOnePermSetSketch" << std::endl;
+        }
         std::fill_n(registers_.data(), registers_.size(), T(-1));
         std::memset(counts_.data(), 0, counts_.size() * sizeof(double));
         as_sigs_.clear();
@@ -238,6 +250,9 @@ public:
         total_updates_ = 0;
     }
     double getcard() {
+        if (verbosity >= Verbosity::DEBUG){
+            std::cout << "Calling getcard() inside LazyOnePermSetSketch" << std::endl;
+        }
         if(card_ > 0.) return card_;
         long double sum = std::accumulate(registers_.begin(), registers_.end(), 0.L,
             [](auto x, auto y) {return x + y * omul;}
@@ -246,6 +261,9 @@ public:
         return m_ * (m_ / sum);
     }
     SigT *data() {
+        if (verbosity >= Verbosity::DEBUG){
+            std::cout << "Calling *data() inside LazyOnePermSetSketch" << std::endl;
+        }
         if(!as_sigs_.empty()) return as_sigs_.data();
         as_sigs_ = std::vector<SigT>(registers_.size());
         SigT *asp = as_sigs_.data();
@@ -262,6 +280,9 @@ public:
         return asp;
     }
     std::vector<uint64_t> &ids() {
+        if (verbosity >= Verbosity::DEBUG){
+            std::cout << "Calling ids() inside LazyOnePermSetSketch" << std::endl;
+        }
         auto p = new std::vector<uint64_t>(registers_.size());
         original_ids_.reset(p);
         std::transform(registers_.begin(), registers_.end(), p->begin(), [this](const T &x) -> T {
@@ -270,6 +291,9 @@ public:
         return *p;
     }
     std::vector<uint32_t> &idcounts() {
+        if (verbosity >= Verbosity::DEBUG){
+            std::cout << "Calling idcounts() inside LazyOnePermSetSketch" << std::endl;
+        }
         auto p = new std::vector<uint32_t>(size());
         idcounts_.reset(p);
         std::copy(counts_.begin(), counts_.end(), p->data());
