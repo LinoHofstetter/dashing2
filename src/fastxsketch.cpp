@@ -196,11 +196,23 @@ FastxSketchingResult &fastx2sketch(FastxSketchingResult &ret, Dashing2Options &o
             x.emplace_back(ss, opts.save_kmers_, opts.save_kmercounts_);
     };
     if(opts.sspace_ == SPACE_SET) {
+        if (verbosity >= Verbosity::DEBUG){
+            std::cout << "opts.sspace_ == SPACE_SET" << std::endl;
+        }
         if(opts.kmer_result_ == ONE_PERM) {
+            if (verbosity >= Verbosity::DEBUG){
+                std::cout << "opts.kmer_result_ == ONE_PERM" << std::endl;
+            }
             make(opss);
             for(auto &x: opss) x.set_mincount(opts.count_threshold_);
         } else if(opts.kmer_result_ == FULL_SETSKETCH) { //Here the space for the registers is reserved
+            if (verbosity >= Verbosity::DEBUG){
+                std::cout << "opts.kmer_result_ == FULL_SETSKETCH" << std::endl;
+            }
             if(opts.sketch_compressed_set) {
+                if (verbosity >= Verbosity::DEBUG){
+                    std::cout << "opts.sketch_compressed_set == TRUE" << std::endl;
+                }
                 cfss.reserve(nt);
                 for(size_t i = 0; i < nt; ++i) {
                     if(opts.fd_level_ == .5) {
@@ -227,16 +239,29 @@ FastxSketchingResult &fastx2sketch(FastxSketchingResult &ret, Dashing2Options &o
                 }
             } else {
                 if (verbosity >= Verbosity::DEBUG){
-                    std::cout << "opts.sketch_compressed_set = FALSE case" << std::endl;
+                    std::cout << "opts.sketch_compressed_set = FALSE" << std::endl;
                 }
                 fss.reserve(nt);
                 for(size_t i = 0; i < nt; ++i)
                     fss.emplace_back(opts.count_threshold_, ss, opts.save_kmers_, opts.save_kmercounts_);
             }
         }
-    } else if(opts.sspace_ == SPACE_MULTISET) make_save(bmhs);
-    else if(opts.sspace_ == SPACE_PSET) make(pmhs);
+    } else if(opts.sspace_ == SPACE_MULTISET) { 
+        if (verbosity >= Verbosity::DEBUG){
+            std::cout << "opts.sspace_ == SPACE_MULTISET" << std::endl;
+        }
+        make_save(bmhs);
+    }
+    else if(opts.sspace_ == SPACE_PSET) {
+        if (verbosity >= Verbosity::DEBUG){
+            std::cout << "opts.sspace_ == SPACE_PSET" << std::endl;
+        }
+        make(pmhs);
+    } 
     else if(opts.sspace_ == SPACE_EDIT_DISTANCE) {
+        if (verbosity >= Verbosity::DEBUG){
+            std::cout << "opts.sspace_ == SPACE_EDIT_DISTANCE" << std::endl;
+        }
         if(opts.parse_by_seq_) {
             omhs.reserve(nt);
             for(size_t i = 0; i < nt; omhs.emplace_back(ss, opts.k_), ++i);
@@ -453,6 +478,9 @@ do {\
             (opts.sspace_ == SPACE_MULTISET || opts.sspace_ == SPACE_PSET || opts.kmer_result_ == FULL_MMER_SET || opts.kmer_result_ == FULL_MMER_COUNTDICT)
         )
         {
+            if (verbosity >= Verbosity::DEBUG){
+                std::cout << "opts.sspace_ == SPACE_MULTISET || SPACE_PSET, opts-kmer_result_ == FULL_MMER_SET || FULL_MMER_COUNTDICT" << std::endl;
+            }
             auto &ctr = ctrs[tid];
             perf_for_substrs([&ctr](auto x) {ctr.add(x);});
             std::vector<u128_t> kmervec128;
@@ -550,6 +578,9 @@ do {\
             }
             std::fclose(ofp);
         } else if(opts.kmer_result_ == FULL_MMER_SEQUENCE) {
+            if (verbosity >= Verbosity::DEBUG){
+                std::cout << "opts.kmer_result_ == FULL_MMER_SEQUENCE" << std::endl;
+            }
             ret.kmers_.clear();
             DBG_ONLY(std::fprintf(stderr, "Full mmer sequence\n");)
             std::FILE * ofp;
@@ -579,6 +610,9 @@ do {\
             std::free(dptr);
             std::fclose(ofp);
         } else if(opts.kmer_result_ == ONE_PERM || opts.kmer_result_ == FULL_SETSKETCH) {
+            if (verbosity >= Verbosity::DEBUG){
+                std::cout << "opts.kmer_result_ == ONE_PERM || FULL_SETSKETCH" << std::endl;
+            }
             //Check if caching is enabled and try to read from file
             std::FILE * ofp{nullptr};
             if((opts.cache_sketches_) && (ofp = bfopen(destination.data(), "wb")) == nullptr)
