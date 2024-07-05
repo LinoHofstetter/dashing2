@@ -21,17 +21,32 @@ SketchingResult &sketch_core(SketchingResult &result, Dashing2DistOptions &opts,
     std::string tmpfile;
     //Only this first if statement out of the next three conditional branches is relevant if working with fasta files
     if(opts.dtype_ == DataType::FASTX) {
+        if (verbosity >= Verbosity::DEBUG) {
+            std::cout << "opts.dytpe_ = FASTX" << std::endl;
+        }
         if(opts.parse_by_seq_) {
+            if (verbosity >= Verbosity::DEBUG) {
+            std::cout << "opts.oarse_by_seq = TRUE" << std::endl;
+        }
             if(paths.size() != 1) {
                 result.nperfile_.resize(paths.size());
                 THROW_EXCEPTION(std::runtime_error("parse-by-seq currently only handles one file at a time. To process multiple files, simply concatenate them into one file, and run dashing2 on that."));
             }
             KSeqHolder kseqs(std::max(opts.nthreads(), 1u));
+            if (verbosity >= Verbosity::DEBUG) {
+                std::cout << "calling fastx2sketch_byseq" << std::endl;
+            }
             fastx2sketch_byseq(result, opts, paths.front(), kseqs.kseqs_, outfile, true, 512);
         } else {
+            if (verbosity >= Verbosity::DEBUG) {
+                std::cout << "calling fastx2sketch" << std::endl;
+            }
             fastx2sketch(result, opts, paths, outfile);
         }
     } else if(opts.dtype_ == DataType::LEAFCUTTER) {
+        if (verbosity >= Verbosity::DEBUG) {
+            std::cout << "opts.dytpe_ = LEAFCUTTER" << std::endl;
+        }
         if(outfile.empty()) THROW_EXCEPTION(std::runtime_error("Outfile required for LeafCutter input."));
         auto res = lf2sketch(paths, opts);
         result.names_ = std::move(res.sample_names());
@@ -47,6 +62,9 @@ SketchingResult &sketch_core(SketchingResult &result, Dashing2DistOptions &opts,
         result.signatures_.resize(res.registers().size());
         std::copy(res.registers().begin(), res.registers().end(), result.signatures_.begin());
     } else if(opts.dtype_ == DataType::BED || opts.dtype_ == DataType::BIGWIG) {
+        if (verbosity >= Verbosity::DEBUG) {
+            std::cout << "opts.dytpe_ = BED || BIGWIG" << std::endl;
+        }
         std::vector<std::pair<size_t, uint64_t>> filesizes = get_filesizes(paths);
         result.signatures_.resize(npaths * opts.sketchsize_);
         result.names_.resize(npaths);
@@ -109,6 +127,9 @@ SketchingResult &sketch_core(SketchingResult &result, Dashing2DistOptions &opts,
     std::FILE *ofp;
     //Writing results in case of working with Full Mmer Sequences
     if(opts.kmer_result_ == FULL_MMER_SEQUENCE) {
+        if (verbosity >= Verbosity::DEBUG) {
+            std::cout << "opts.dytpe_ = FULL_MMER_SEQUENCE" << std::endl;
+        }
         if((ofp = bfopen(outfile.data(), "r+")) == nullptr) THROW_EXCEPTION(std::runtime_error("Failed to open output file for mmer sequence results."));
         size_t offset = result.names_.size();
         checked_fwrite(&offset, sizeof(offset), 1, ofp);
@@ -131,6 +152,9 @@ SketchingResult &sketch_core(SketchingResult &result, Dashing2DistOptions &opts,
     } 
     //Handling file writing for other cases
     else {
+        if (verbosity >= Verbosity::DEBUG) {
+            std::cout << "opts.dytpe_ = NOT FOUND" << std::endl;
+        }
         if(outfile.size() && outfile != "/dev/stdout" && outfile != "-") {
             // This should not overlap with the memory mapped for result.signatures_
             const uint64_t t = result.cardinalities_.size();

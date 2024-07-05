@@ -152,6 +152,7 @@ std::string FastxSketchingResult::str() const {
 }
 
 //Cardinality Estimation
+//It looks like this function isn't used anywhere (by global search)
 INLINE double compute_cardest(const RegT *ptr, const size_t m) {
     double s = 0.;
 #if _OPENMP >= 201307L
@@ -198,21 +199,36 @@ FastxSketchingResult &fastx2sketch(FastxSketchingResult &ret, Dashing2Options &o
         if(opts.kmer_result_ == ONE_PERM) {
             make(opss);
             for(auto &x: opss) x.set_mincount(opts.count_threshold_);
-        } else if(opts.kmer_result_ == FULL_SETSKETCH) {
+        } else if(opts.kmer_result_ == FULL_SETSKETCH) { //Here the space for the registers is reserved
             if(opts.sketch_compressed_set) {
                 cfss.reserve(nt);
                 for(size_t i = 0; i < nt; ++i) {
                     if(opts.fd_level_ == .5) {
+                        if (verbosity >= Verbosity::DEBUG){
+                            std::cout << "NibbleSetS case" << std::endl;
+                        }
                         cfss.emplace_back(NibbleSetS(opts.count_threshold_, ss, opts.compressed_b_, opts.compressed_a_));
                     } else if(opts.fd_level_ == 1.) {
+                        if (verbosity >= Verbosity::DEBUG){
+                            std::cout << "ByteSetS case" << std::endl;
+                        }
                         cfss.emplace_back(ByteSetS(opts.count_threshold_, ss, opts.compressed_b_, opts.compressed_a_));
                     } else if(opts.fd_level_ == 2.) {
+                        if (verbosity >= Verbosity::DEBUG){
+                            std::cout << "ShortSetS case" << std::endl;
+                        }
                         cfss.emplace_back(ShortSetS(opts.count_threshold_, ss, opts.compressed_b_, opts.compressed_a_));
                     } else if(opts.fd_level_ == 4.) {
+                        if (verbosity >= Verbosity::DEBUG){
+                            std::cout << "UintSetS case" << std::endl;
+                        }
                         cfss.emplace_back(UintSetS(opts.count_threshold_, ss, opts.compressed_b_, opts.compressed_a_));
                     }
                 }
             } else {
+                if (verbosity >= Verbosity::DEBUG){
+                    std::cout << "opts.sketch_compressed_set = FALSE case" << std::endl;
+                }
                 fss.reserve(nt);
                 for(size_t i = 0; i < nt; ++i)
                     fss.emplace_back(opts.count_threshold_, ss, opts.save_kmers_, opts.save_kmercounts_);
