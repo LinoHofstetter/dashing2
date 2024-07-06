@@ -570,13 +570,13 @@ public:
         std::cout << "m_: " << m_ << std::endl;
         std::cout << "Sum: " << s << std::endl;
 
-        if (!data_.empty()) {
+        if (data_ && m_ > 0) {  // Check if data_ is not null and m_ is greater than 0
             std::cout << "First 5 register values: ";
-            for(size_t i = 0; i < 5 && i < data_.size(); ++i) {
+            for(size_t i = 0; i < 5 && i < m_; ++i) {
                 std::cout << data_[i] << " ";
             }
             std::cout << std::endl;
-            std::cout << "Last register value: " << data_.back() << std::endl;
+            std::cout << "Last register value: " << data_[m_ - 1] << std::endl;
         }
         return m_ / s;
     }
