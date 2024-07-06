@@ -565,6 +565,19 @@ public:
 #endif
         for(size_t i = 0; i < m_; ++i)
             s += data_[i];
+        
+        // Adding print statements to display m_, sum, and register values
+        std::cout << "m_: " << m_ << std::endl;
+        std::cout << "Sum: " << s << std::endl;
+
+        if (!data_.empty()) {
+            std::cout << "First 5 register values: ";
+            for(size_t i = 0; i < 5 && i < data_.size(); ++i) {
+                std::cout << data_[i] << " ";
+            }
+            std::cout << std::endl;
+            std::cout << "Last register value: " << data_.back() << std::endl;
+        }
         return m_ / s;
     }
     template<typename ResT=uint16_t>
