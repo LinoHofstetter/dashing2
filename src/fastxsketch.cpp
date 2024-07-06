@@ -364,6 +364,9 @@ FastxSketchingResult &fastx2sketch(FastxSketchingResult &ret, Dashing2Options &o
             mss is calculated as the sketch size (ss) multiplied by myind, determining the starting position in the signatures vector.
             path is the file path to process.
         */
+        if (verbosity >= Verbosity::DEBUG) {
+            std::cout << "PL: entered the for loop" << std::endl;
+        }
         int tid = 0;
         OMP_ONLY(tid = omp_get_thread_num();)
         //const int tid = OMP_ELSE(omp_get_thread_num(), 0);
@@ -386,7 +389,13 @@ FastxSketchingResult &fastx2sketch(FastxSketchingResult &ret, Dashing2Options &o
         */
         int dkt, dct, dft;
         bool dkif = check_compressed(destkmer, dkt);
+        if (verbosity >= Verbosity::DEBUG){
+            std::cout << "PL: dkif = " << dkif << std::endl;
+        }
         const bool destisfile = check_compressed(destination, dft);
+        if (verbosity >= Verbosity::DEBUG){
+            std::cout << "PL: destisfile = " << destisfile << std::endl;
+        }
         if(!dkif && opts.kmer_result_ == FULL_MMER_SET && destisfile) {
             dkif = 1; destkmer = destination;
         }
@@ -434,6 +443,9 @@ FastxSketchingResult &fastx2sketch(FastxSketchingResult &ret, Dashing2Options &o
                     //ret.cardinalities_[myind] = compute_cardest(&ret.signatures_[mss], ss);
                     DBG_ONLY(std::fprintf(stderr, "Sketch was loaded from %s and has card %g\n", destination.data(), ret.cardinalities_[myind]);)
                 }
+                if (verbosity >= Verbosity::DEBUG){
+                    std::cout << "PL: About to load cached kmer stuff from file" << std::endl;
+                }
                 if(ret.kmers_.size()) //load cached kmer IDs from file
                     load_copy(destkmer, &ret.kmers_[mss], &ret.cardinalities_[myind], ss);
                 if(ret.kmercounts_.size()) //load cached kmer counts from file
@@ -447,6 +459,9 @@ FastxSketchingResult &fastx2sketch(FastxSketchingResult &ret, Dashing2Options &o
             continue;
         } else { //Skip caching
 #ifndef NDEBUG
+            if (verbosity >= Verbosity::DEBUG){
+                std::cout << "PL: Skipped Caching" << std::endl;
+            }
             std::fprintf(stderr, "We skipped caching because with %d as cache sketches\n", opts.cache_sketches_);
             std::fprintf(stderr, "destisfile: %d. is countdict %d. is kmerfile %d\n", destisfile, opts.kmer_result_ == FULL_MMER_COUNTDICT, dkif);
             std::fprintf(stderr, "kc save %d, kmer result %s, dkcif %d\n", opts.save_kmercounts_, to_string(opts.kmer_result_).data(), dkcif);
@@ -455,11 +470,15 @@ FastxSketchingResult &fastx2sketch(FastxSketchingResult &ret, Dashing2Options &o
         perform_sketch:
         __RESET(tid);
         //SKETCH COMPUTATION
+        if (verbosity >= Verbosity::DEBUG){
+            std::cout << "PL: About to compute sketch computation" << std::endl;
+        }
+        //Big complicated lambda function -> what does it do??
         auto perf_for_substrs = [&](const auto &func) __attribute__((__always_inline__)) {
-            for_each_substr([&](const std::string &subpath) {
-                auto lfunc = [&](auto x) __attribute__((__always_inline__)) {
+            for_each_substr([&](const std::string &subpath) { //iterate over substrings
+                auto lfunc = [&](auto x) __attribute__((__always_inline__)) { //lambda function
                     x = maskfn(x);
-                    if((!opts.fs_ || !opts.fs_->in_set(x)) && opts.downsample_pass()) func(x);
+                    if((!opts.fs_ || !opts.fs_->in_set(x)) && opts.downsample_pass()) func(x);  //Checks if the masked item x is either not in a filter set (fs_) or passes a downsampling check.
                 };
                 auto lfunc2 = [&func](auto x) __attribute__((__always_inline__)) {func(maskfn(x));};
                 const auto seqp = kseqs.kseqs_ + tid;
@@ -471,6 +490,7 @@ do {\
         f(lfunc, subpath.data(), seqp);\
     } \
 } while(0)
+                //Hash function part
                 if(opts.use128()) {
                     if(unsigned(opts.k_) <= opts.nremperres128()) {
                         if(entmin) {
@@ -503,7 +523,8 @@ do {\
         )
         {
             if (verbosity >= Verbosity::DEBUG){
-                std::cout << "opts.sspace_ == SPACE_MULTISET || SPACE_PSET, opts-kmer_result_ == FULL_MMER_SET || FULL_MMER_COUNTDICT" << std::endl;
+                std::cout << "PL: In file writing part" << std::endl;
+                std::cout << "PL: opts.sspace_ == SPACE_MULTISET || SPACE_PSET, opts-kmer_result_ == FULL_MMER_SET || FULL_MMER_COUNTDICT" << std::endl;
             }
             auto &ctr = ctrs[tid];
             perf_for_substrs([&ctr](auto x) {ctr.add(x);});
@@ -605,7 +626,7 @@ do {\
         } //handling full_MMER
         else if(opts.kmer_result_ == FULL_MMER_SEQUENCE) {
             if (verbosity >= Verbosity::DEBUG){
-                std::cout << "opts.kmer_result_ == FULL_MMER_SEQUENCE" << std::endl;
+                std::cout << "PL: opts.kmer_result_ == FULL_MMER_SEQUENCE" << std::endl;
             }
             ret.kmers_.clear();
             DBG_ONLY(std::fprintf(stderr, "Full mmer sequence\n");)
@@ -638,7 +659,7 @@ do {\
         } //Handling ONE_PERM, FULL_SETSKETCH
         else if(opts.kmer_result_ == ONE_PERM || opts.kmer_result_ == FULL_SETSKETCH) {
             if (verbosity >= Verbosity::DEBUG){
-                std::cout << "opts.kmer_result_ == ONE_PERM || FULL_SETSKETCH" << std::endl;
+                std::cout << "PL: opts.kmer_result_ == ONE_PERM || FULL_SETSKETCH" << std::endl;
             }
             //Check if caching is enabled and try to read from file
             std::FILE * ofp{nullptr};
@@ -649,6 +670,9 @@ do {\
             const size_t opsssz = opss.size();
             auto &cret = ret.cardinalities_[myind];
             if(opsssz) { //opsssz stores size of opss 
+                if (verbosity >= Verbosity::DEBUG){
+                    std::cout << "PL: opsssz = TRUE" << std::endl;
+                }
                 assert(opss.size() > unsigned(tid)); //assert opps has element at position tid
                 assert(opss.at(tid).total_updates() == 0);
                 auto p = &opss[tid];
@@ -657,18 +681,50 @@ do {\
                 cret = p->getcard(); //compute and store cardinality in cret
             } else {
                 if(opts.sketch_compressed_set) {
+                    if (verbosity >= Verbosity::DEBUG){
+                        std::cout << "PL: opts.sketch_compressed_set = TRUE" << std::endl;
+                    }
+                    //lambda function inside visit
                     std::visit([&](auto &x) { //apply update
                         perf_for_substrs([&x](auto hv) {
-                            x.update(hv);
+                            x.update(hv); //x is reference to sketch at tid
                         });
                         cret = x.cardinality(); //compute and store cardinality in cret
+
+                        if (verbosity >= Verbosity::DEBUG) {
+                            int status;
+                            char* realname = abi::__cxa_demangle(typeid(x).name(), 0, 0, &status);
+                            std::cout << "PL: Type of x is " << (status == 0 ? realname : typeid(x).name()) << std::endl;
+                            free(realname); // remember to free the allocated memory
+                        }
+
+
                     }, cfss.at(tid));
                 } else {
+                    if (verbosity >= Verbosity::DEBUG){
+                        std::cout << "PL: opts.sketch_compressed_set = FALSE" << std::endl;
+                    }
                     perf_for_substrs([p=&fss[tid]](auto hv) {p->update(hv);});
                     cret = fss[tid].getcard();
+                    if (verbosity >= Verbosity::DEBUG){
+                        //mangled type name
+                        std::cout << "PL: Type of object at fss[" << tid << "] is " << typeid(fss[tid]).name() << std::endl;
+
+                        //demangle the type name for readability
+                        int status;
+                        char* realname = abi::__cxa_demangle(typeid(fss[tid]).name(), 0, 0, &status);
+                        std::cout << "PL: Demangled type: " << (status == 0 ? realname : typeid(fss[tid]).name()) << std::endl;
+                        free(realname); // Free the allocated memory
+                    }
                 }
             }
-            if(ofp) checked_fwrite(ofp, &cret, sizeof(double)); //write cardinality to file
+            if(ofp) {
+                if (verbosity >= Verbosity::DEBUG){
+                    std::cout << "PL: ofp = TRUE, writing cardinality = " << cret << " to file" << std::endl;
+                    std::cout << "opts.sspace_ = " << opts.sspace_ << std::endl;
+                }
+                checked_fwrite(ofp, &cret, sizeof(double)); //write cardinality to file
+            }
             std::fflush(ofp);
             const uint64_t *ids = nullptr;
             const uint32_t *counts = nullptr;

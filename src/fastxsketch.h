@@ -6,6 +6,8 @@
 #include "tmpseqs.h"
 #include "cmp_main.h"
 #include <variant>
+#include <typeinfo> //added for type printing
+#include <cxxabi.h> //added for type printing
 
 namespace dashing2 {
 using std::to_string;

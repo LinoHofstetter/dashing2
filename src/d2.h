@@ -75,6 +75,7 @@ void for_each_substr(const F &func, const std::string &s, const int sep=' ') {
     }
 }
 
+//check if file is gz or xz compressed
 static inline bool check_compressed(std::string &path, int &ft) {
     if(bns::isfile(path)) {
         ft = 0;
