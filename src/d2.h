@@ -237,6 +237,9 @@ public:
         return (fd_level_ == 1. ? 3: fd_level_ == 2. ? 2: fd_level_ == 4. ? 1: fd_level_ == 0.5 ? 4: fd_level_ == 8 ? 0: -1) + (sizeof(RegT) == 16);
     }
     void set_sketch_compressed() {
+        if (verbosity >= Verbosity::DEBUG){
+            std::cout << "COMPRESSING SKETCH (set_sketch_compressed() called in d2.h)" << std::endl;
+        }
         sketch_compressed_set = this->sketch_compressed();
     }
 };

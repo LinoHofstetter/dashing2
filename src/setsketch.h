@@ -322,7 +322,7 @@ public:
         //generate_betas();
     }
     CSetSketch(const CSetSketch &o): m_(o.m_), data_(allocate(o.m_)), ls_(m_), mvt_(m_, o.mvt_.mv()), ids_(o.ids_), idcounts_(o.idcounts_) {
-        std::cout << "CONSTRUCTED CSETSKETCH OBJECT" << std::endl; //added for debug
+        std::cout << "COPIED EXISTING CSETSKETCH OBJECT 2" << std::endl; //added for debug
         mvt_.assign(data_.get(), m_, o.mvt_.mv());
         std::copy(o.data_.get(), &o.data_[2 * m_ - 1], data_.get());
         //generate_betas();
@@ -539,6 +539,7 @@ public:
         return std::max((lhcard + rhcard) / (2. - alph - beta), 0.);
     }
     double getcard() const {
+        std::cout << "INSIDE getcard(): CSetSketch" << std::endl;
         if(mycard_ < 0.)
             mycard_ = cardinality();
         return mycard_;
@@ -557,6 +558,7 @@ public:
 
     double cardinality_estimate() const {return cardinality();}
     double cardinality() const {
+        std::cout << "INSIDE cardinality(): CSetSketch" << std::endl;
         double s = 0.;
 #if _OPENMP >= 201307L
         #pragma omp simd reduction(+:s)
@@ -784,6 +786,7 @@ public:
     }
     double cardinality_estimate() const {return cardinality();}
     double cardinality() const {
+        std::cout << "INSIDE cardinality(): CSetSketch" << std::endl;
         double num = m_ * (1. - 1. / b_) * logbinv_ * ainv_;
         return num / harmean();
     }

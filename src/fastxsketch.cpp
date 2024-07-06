@@ -402,6 +402,10 @@ FastxSketchingResult &fastx2sketch(FastxSketchingResult &ret, Dashing2Options &o
             if(opts.kmer_result_ < FULL_MMER_SET) {
                 if(ret.signatures_.size()) {
                     if(opts.sketch_compressed_set) {
+                        if (verbosity >= Verbosity::DEBUG) {
+                            std::cout << "PARALLEL LOOP: opts.sketch_compressed_set = TRUE (cache handling part)" << std::endl;
+                        }
+                
                         std::FILE *ifp = std::fopen(destination.data(), "rb");
                         std::fread(&ret.cardinalities_[myind], sizeof(double), 1, ifp);
                         std::array<long double, 4> arr;
