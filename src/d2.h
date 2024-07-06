@@ -239,7 +239,7 @@ public:
     }
     void set_sketch_compressed() {
         std::cout << "COMPRESSING SKETCH (set_sketch_compressed() called in d2.h)" << std::endl;
-        sketch_compressed_set = this->sketch_compressed();
+        //sketch_compressed_set = this->sketch_compressed(); //comment out to see what happens
     }
 };
 
