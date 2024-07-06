@@ -176,7 +176,7 @@ public:
         return shasher_(uint64_t(x));
     }
     INLINE void update(const T oid) {
-        std::cout << "Calling update() inside LazyOnePermSetSketch" << std::endl;
+        //std::cout << "Calling update() inside LazyOnePermSetSketch" << std::endl; //Update() is called to often to print this
         
         ++total_updates_;
         const T id = hasher_(oid);

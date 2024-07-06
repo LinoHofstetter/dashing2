@@ -26,8 +26,8 @@ SketchingResult &sketch_core(SketchingResult &result, Dashing2DistOptions &opts,
         }
         if(opts.parse_by_seq_) {
             if (verbosity >= Verbosity::DEBUG) {
-            std::cout << "opts.oarse_by_seq = TRUE" << std::endl;
-        }
+                std::cout << "opts.oarse_by_seq = TRUE" << std::endl;
+            }
             if(paths.size() != 1) {
                 result.nperfile_.resize(paths.size());
                 THROW_EXCEPTION(std::runtime_error("parse-by-seq currently only handles one file at a time. To process multiple files, simply concatenate them into one file, and run dashing2 on that."));

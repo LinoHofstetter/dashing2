@@ -246,6 +246,9 @@ FastxSketchingResult &fastx2sketch(FastxSketchingResult &ret, Dashing2Options &o
                 fss.reserve(nt);
                 for(size_t i = 0; i < nt; ++i)
                     fss.emplace_back(opts.count_threshold_, ss, opts.save_kmers_, opts.save_kmercounts_);
+                if (verbosity >= Verbosity::DEBUG){
+                    std::cout << "after for loop, check if object initialization happens before" << std::endl;
+                }
             }
         }
     } else if(opts.sspace_ == SPACE_MULTISET) { 
@@ -410,9 +413,12 @@ FastxSketchingResult &fastx2sketch(FastxSketchingResult &ret, Dashing2Options &o
             //Load Cached data
             if(opts.kmer_result_ < FULL_MMER_SET) {
                 if(ret.signatures_.size()) {
+                    if (verbosity >= Verbosity::DEBUG){
+                        std::cout << "ret.signatures_.size() = 1" << std::endl;
+                    }
                     if(opts.sketch_compressed_set) {
                         if (verbosity >= Verbosity::DEBUG) {
-                            std::cout << "PARALLEL LOOP: opts.sketch_compressed_set = TRUE (cache handling part)" << std::endl;
+                            std::cout << "PL: opts.sketch_compressed_set = TRUE (cache handling part)" << std::endl;
                         }
                 
                         std::FILE *ifp = std::fopen(destination.data(), "rb");
@@ -434,6 +440,9 @@ FastxSketchingResult &fastx2sketch(FastxSketchingResult &ret, Dashing2Options &o
                         std::fclose(ifp);
                     } else {
                         assert(mss + ss <= ret.signatures_.size() || !std::fprintf(stderr, "mss %zu, ss %zu, sig size %zu\n", mss, ss, ret.signatures_.size()));
+                        if (verbosity >= Verbosity::DEBUG) {
+                            std::cout << "PL: opts.sketch_compressed_set = FALSE (cache handling part)" << std::endl;
+                        }
                         //load copy reads sketch data from file and stores register values in ret.signatures, if successfull
                         if(load_copy(destination, &ret.signatures_[mss], &ret.cardinalities_[myind], ss) == 0) {
                             std::fprintf(stderr, "Sketch was not available in file %s... resketching.\n", destination.data());
