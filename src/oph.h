@@ -252,6 +252,20 @@ public:
         long double sum = std::accumulate(registers_.begin(), registers_.end(), 0.L,
             [](auto x, auto y) {return x + y * omul;}
         );
+
+        // Adding print statements to display m_, sum, and register values
+        std::cout << "m_: " << m_ << std::endl;
+        std::cout << "Sum: " << sum << std::endl;
+
+        if (!registers_.empty()) {
+            std::cout << "First 5 register values: ";
+            for(size_t i = 0; i < 5 && i < registers_.size(); ++i) {
+                std::cout << registers_[i] << " ";
+            }
+            std::cout << std::endl;
+            std::cout << "Last register value: " << registers_.back() << std::endl;
+        }
+
         if(!sum) return std::numeric_limits<double>::infinity();
         return m_ * (m_ / sum);
     }
