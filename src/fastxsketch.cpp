@@ -690,9 +690,6 @@ do {\
                 cret = p->getcard(); //compute and store cardinality in cret
 
                 if (verbosity >= Verbosity::DEBUG){
-                    //mangled type name
-                    std::cout << "PL: Type of object at opss[" << tid << "] is " << typeid(opss[tid]).name() << std::endl;
-
                     //demangle the type name for readability
                     int status;
                     char* realname = abi::__cxa_demangle(typeid(opss[tid]).name(), 0, 0, &status);

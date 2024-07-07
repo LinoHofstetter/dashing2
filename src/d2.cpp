@@ -135,10 +135,11 @@ int main_usage() {
 using namespace dashing2;
 
 
-void sketch_wrapper(const std::string &input_filepaths, const std::string &sketch_output_dir) {
+void sketch_wrapper(const std::string &input_filepaths, const std::string &sketch_output_dir, const std::string &flag1) {
     std::vector<std::string> args = {
         "dashing2",               // Command (not actually used but placeholders for argv[0])
-        "sketch",                 
+        "sketch",
+        flag1,                 
         "--cache", //cache sketches -> CHECK IF THIS IS NEEDED
         "--outprefix", sketch_output_dir, //specify where to save sketches
         "-F",                     // Indicate to read files from a list

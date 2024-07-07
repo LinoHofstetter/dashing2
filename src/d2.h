@@ -381,7 +381,7 @@ struct SketchingResult {
 // using GeneralCallback = std::function<void(std::any)>; // not doing the general case yet
 using DistanceCallback = std::function<void(size_t, size_t, float)>;
 
-void sketch_wrapper(const std::string &input_filepaths, const std::string &sketch_output_dir); //wrapper function to perform "dashing2 sketch -F" call
+void sketch_wrapper(const std::string &input_filepaths, const std::string &sketch_output_dir, const std::string &flag1); //wrapper function to perform "dashing2 sketch -F" call
 int cmp_presketched(const std::string &sketch1, const std::string &sketch2); //wrapper function to compute distance between precomputed sketches. Arguments are paths to sketchfiles
 float cmp_sketches(std::shared_ptr<dashing2::SketchingResult> sketch1, std::shared_ptr<dashing2::SketchingResult> sketch2);
 
