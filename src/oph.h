@@ -247,6 +247,13 @@ public:
     }
     double getcard() {
         std::cout << "Calling getcard() inside LazyOnePermSetSketch" << std::endl;
+
+        // Print the type of the elements in registers_
+        int status;
+        char* realname = abi::__cxa_demangle(typeid(registers_[0]).name(), 0, 0, &status);
+        std::cout << "Type of registers_ elements: " << (status == 0 ? realname : typeid(registers_[0]).name()) << std::endl;
+        free(realname);  // Free the allocated memory for the demangled type name
+
         
         if(card_ > 0.) return card_;
         long double sum = std::accumulate(registers_.begin(), registers_.end(), 0.L,
