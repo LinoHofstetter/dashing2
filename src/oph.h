@@ -4,6 +4,7 @@
 #include "sketch/div.h"
 #include "sketch/common.h"
 #include "hash.h"
+#include <cxxabi.h> //added for type demangling
 
 namespace dashing2 {
 
