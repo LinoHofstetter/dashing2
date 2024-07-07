@@ -688,6 +688,17 @@ do {\
                 perf_for_substrs([p](auto hv) {p->update(hv);}); //update sketch by calling update function
                 assert(ret.cardinalities_.size() > i);
                 cret = p->getcard(); //compute and store cardinality in cret
+
+                if (verbosity >= Verbosity::DEBUG){
+                    //mangled type name
+                    std::cout << "PL: Type of object at opss[" << tid << "] is " << typeid(opss[tid]).name() << std::endl;
+
+                    //demangle the type name for readability
+                    int status;
+                    char* realname = abi::__cxa_demangle(typeid(opss[tid]).name(), 0, 0, &status);
+                    std::cout << "PL: Demangled type: " << (status == 0 ? realname : typeid(opss[tid]).name()) << std::endl;
+                    free(realname); // Free the allocated memory
+                }
             } else {
                 if(opts.sketch_compressed_set) {
                     if (verbosity >= Verbosity::DEBUG){
