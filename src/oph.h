@@ -247,13 +247,14 @@ public:
         total_updates_ = 0;
     }
     double getcard() {
+        //Prints useful for debug, but pollute output in real algorithm
         std::cout << "Calling getcard() inside LazyOnePermSetSketch" << std::endl;
 
         // Print the type of the elements in registers_
         int status;
         char* realname = abi::__cxa_demangle(typeid(registers_[0]).name(), 0, 0, &status);
         std::cout << "Type of registers_ elements: " << (status == 0 ? realname : typeid(registers_[0]).name()) << std::endl;
-        free(realname);  // Free the allocated memory for the demangled type name
+        free(realname);  // Free the allocated memory for the demangled type name*/
 
         
         if(card_ > 0.) return card_;
@@ -261,6 +262,7 @@ public:
             [](auto x, auto y) {return x + y * omul;}
         );
 
+        //Prints useful for debug, but pollute output in real algorithm
         // Adding print statements to display m_, sum, and register values
         std::cout << "m_: " << m_ << std::endl;
         std::cout << "Sum: " << sum << std::endl;

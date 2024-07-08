@@ -539,7 +539,7 @@ public:
         return std::max((lhcard + rhcard) / (2. - alph - beta), 0.);
     }
     double getcard() const {
-        std::cout << "INSIDE getcard(): CSetSketch" << std::endl;
+        //std::cout << "INSIDE getcard(): CSetSketch" << std::endl;
         if(mycard_ < 0.)
             mycard_ = cardinality();
         return mycard_;
@@ -558,7 +558,7 @@ public:
 
     double cardinality_estimate() const {return cardinality();}
     double cardinality() const {
-        std::cout << "INSIDE cardinality(): CSetSketch" << std::endl;
+        //std::cout << "INSIDE cardinality(): CSetSketch" << std::endl;
         double s = 0.;
 #if _OPENMP >= 201307L
         #pragma omp simd reduction(+:s)
@@ -566,6 +566,7 @@ public:
         for(size_t i = 0; i < m_; ++i)
             s += data_[i];
         
+        /*
         // Adding print statements to display m_, sum, and register values
         std::cout << "m_: " << m_ << std::endl;
         std::cout << "Sum: " << s << std::endl;
@@ -577,7 +578,7 @@ public:
             }
             std::cout << std::endl;
             std::cout << "Last register value: " << data_[m_ - 1] << std::endl;
-        }
+        }*/
         return m_ / s;
     }
     template<typename ResT=uint16_t>
@@ -713,7 +714,7 @@ public:
     template<typename OFT, typename=std::enable_if_t<std::is_arithmetic_v<OFT>>>
     INLINE void update(const uint64_t id, OFT) {update(id);}
     void update(const uint64_t id) {
-        std::cout << "CALLED UPDATE IN SETSKETCH OBJECT" << std::endl; //added for debug
+        //std::cout << "CALLED UPDATE IN SETSKETCH OBJECT" << std::endl; //added for debug
         using GenFT = std::conditional_t<(sizeof(FT) <= 8), double, long double>;
         GenFT carry = 0.;
         mycard_ = -1.;
@@ -787,19 +788,19 @@ public:
         }
     }
     double jaccard_by_ix(const SetSketch<ResT, FT> &o) const {
-        std::cout << "CALLED JACCARD IN SETSKETCH OBJECT" << std::endl; //added for debug
+        //std::cout << "CALLED JACCARD IN SETSKETCH OBJECT" << std::endl; //added for debug
         auto us = union_size(o);
         auto mycard = getcard(), ocard = o.getcard();
         return (mycard + ocard - us) / us;
     }
     double union_size(const SetSketch<ResT, FT> &o) const {
-        std::cout << "CALLED UNIONSIZE IN SETSKETCH OBJECT" << std::endl; //added for debug
+        //std::cout << "CALLED UNIONSIZE IN SETSKETCH OBJECT" << std::endl; //added for debug
         double num = m_ * (1. - 1. / b_) * logbinv_ * ainv_;
         return num / harmean(&o);
     }
     double cardinality_estimate() const {return cardinality();}
     double cardinality() const {
-        std::cout << "INSIDE cardinality(): CSetSketch" << std::endl;
+        //std::cout << "INSIDE cardinality(): CSetSketch" << std::endl;
         double num = m_ * (1. - 1. / b_) * logbinv_ * ainv_;
         return num / harmean();
     }
