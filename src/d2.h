@@ -238,12 +238,9 @@ public:
         return (fd_level_ == 1. ? 3: fd_level_ == 2. ? 2: fd_level_ == 4. ? 1: fd_level_ == 0.5 ? 4: fd_level_ == 8 ? 0: -1) + (sizeof(RegT) == 16);
     }
     void set_sketch_compressed() {
-        std::cout << "COMPRESSING SKETCH (set_sketch_compressed() called in d2.h)" << std::endl;
+        //std::cout << "COMPRESSING SKETCH (set_sketch_compressed() called in d2.h)" << std::endl;
         sketch_compressed_set = this->sketch_compressed(); //comment out to see what happens
-        std::cout << "sketch_compressed_set = " << sketch_compressed_set << std::endl;
-        //The attempt of just setting to true causes segmentation faults
-        //std::cout << "Setting sketch_compressed_set to true d2.h)" << std::endl;
-        //sketch_compressed_set = true;
+        //std::cout << "sketch_compressed_set = " << sketch_compressed_set << std::endl;
     }
 };
 

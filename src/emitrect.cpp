@@ -142,7 +142,8 @@ void emit_rectangular(const Dashing2DistOptions &opts, const SketchingResult &re
         auto &of = ofopt.value();
         if(opts.output_kind_ != PHYLIP) {
             const char *labelstr = asym ? "Asymmetric pairwise": opts.output_kind_ == PANEL ? "Panel (Query/Refernce)": "Symmetric pairwise";
-            of.print("#Dashing2 {} Output\n", labelstr);
+            if (verbosity >= Verbosity::INFO){
+                of.print("#Dashing2 {} Output\n", labelstr);
             of.print("#Dashing2Options: {}\n", opts.to_string());
             of.print("#Sources");
             const int64_t end = result.names_.empty() ? result.nqueries(): result.names_.size();
@@ -150,6 +151,7 @@ void emit_rectangular(const Dashing2DistOptions &opts, const SketchingResult &re
                 result.names_.empty() ? of.print("\tE{}", i) : of.print("\t{}", result.names_[i]);
             }
             of.print("\n");
+            }
         } else {
             of.print("{}\n", ns);
         }
