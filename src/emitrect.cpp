@@ -144,16 +144,18 @@ void emit_rectangular(const Dashing2DistOptions &opts, const SketchingResult &re
             const char *labelstr = asym ? "Asymmetric pairwise": opts.output_kind_ == PANEL ? "Panel (Query/Refernce)": "Symmetric pairwise";
             if (verbosity >= Verbosity::INFO){
                 of.print("#Dashing2 {} Output\n", labelstr);
-            of.print("#Dashing2Options: {}\n", opts.to_string());
-            of.print("#Sources");
-            const int64_t end = result.names_.empty() ? result.nqueries(): result.names_.size();
-            for(int64_t i = 0; i < end; ++i) {
-                result.names_.empty() ? of.print("\tE{}", i) : of.print("\t{}", result.names_[i]);
-            }
-            of.print("\n");
+                of.print("#Dashing2Options: {}\n", opts.to_string());
+                of.print("#Sources");
+                const int64_t end = result.names_.empty() ? result.nqueries(): result.names_.size();
+                for(int64_t i = 0; i < end; ++i) {
+                    result.names_.empty() ? of.print("\tE{}", i) : of.print("\t{}", result.names_[i]);
+                }
+                of.print("\n");
             }
         } else {
-            of.print("{}\n", ns);
+            if (verbosity >= Verbosity::INFO){
+               of.print("{}\n", ns);
+            }
         }
     }
     /*
@@ -177,20 +179,22 @@ void emit_rectangular(const Dashing2DistOptions &opts, const SketchingResult &re
             }
 #endif
             if(opts.output_format_ == HUMAN_READABLE) {
-                auto &of = ofopt.value();
-                const float *datp = f.data();
-                for(size_t i = fs; i < fe; ++i) {
-                    std::string fn;
-                    if((result.names_.size() > i) && (!result.names_[i].empty())) {
-                        fn = result.names_[i];
-                    } else {
-                        fn = std::string("E") + std::to_string(i);
+                if (verbosity >= Verbosity::INFO) { 
+                    auto &of = ofopt.value();
+                    const float *datp = f.data();
+                    for(size_t i = fs; i < fe; ++i) {
+                        std::string fn;
+                        if((result.names_.size() > i) && (!result.names_[i].empty())) {
+                            fn = result.names_[i];
+                        } else {
+                            fn = std::string("E") + std::to_string(i);
+                        }
+                        if(fn.size() < 9) fn.append(9 - fn.size(), ' ');
+                        of.print("{}", fn);
+                        const size_t jend = opts.output_kind_ == PANEL ? nq: asym ? ns: ns - i - 1;
+                        if(opts.output_kind_ == SYMMETRIC_ALL_PAIRS) print_tabs(i + 1, of);
+                        batched_write(datp, of, jend);
                     }
-                    if(fn.size() < 9) fn.append(9 - fn.size(), ' ');
-                    of.print("{}", fn);
-                    const size_t jend = opts.output_kind_ == PANEL ? nq: asym ? ns: ns - i - 1;
-                    if(opts.output_kind_ == SYMMETRIC_ALL_PAIRS) print_tabs(i + 1, of);
-                    batched_write(datp, of, jend);
                 }
             } else {
                 assert(opts.output_format_ == MACHINE_READABLE);
@@ -337,41 +341,43 @@ void emit_rectangular(const Dashing2DistOptions &opts, const SketchingResult &re
     static constexpr size_t BUFSIZEM1 = BUFSIZE - 1;
     if(const size_t dqs = datq.size(); dqs) {
         if(opts.output_format_ == HUMAN_READABLE) {
-            auto &of = ofopt.value();
-            of.flush();
-            std::vector<fmt::memory_buffer> bufs(dqs);
-            // Format in parallel, then write in sequence
-            OMP_PFOR_DYN
-            for(size_t di = 0; di < dqs; ++di) {
-                auto &f = datq[di];
-                auto biof = std::back_inserter(bufs[di]);
-                const auto fs = f.start(), fe = f.stop();
-                const float *datp = f.data();
-                for(size_t i = fs; i < fe; ++i) {
-                    std::string fn;
-                    if((result.names_.size() > i) && (!result.names_[i].empty())) {
-                        fn = result.names_[i];
-                    } else {
-                        fn = std::string("E") + std::to_string(i);
+            if (verbosity >= Verbosity::INFO){
+                auto &of = ofopt.value();
+                of.flush();
+                std::vector<fmt::memory_buffer> bufs(dqs);
+                // Format in parallel, then write in sequence
+                OMP_PFOR_DYN
+                for(size_t di = 0; di < dqs; ++di) {
+                    auto &f = datq[di];
+                    auto biof = std::back_inserter(bufs[di]);
+                    const auto fs = f.start(), fe = f.stop();
+                    const float *datp = f.data();
+                    for(size_t i = fs; i < fe; ++i) {
+                        std::string fn;
+                        if((result.names_.size() > i) && (!result.names_[i].empty())) {
+                            fn = result.names_[i];
+                        } else {
+                            fn = std::string("E") + std::to_string(i);
+                        }
+                        if(fn.size() < 9) fn.append(9 - fn.size(), ' ');
+                        fmt::format_to(biof, "{}", fn);
+                        const size_t jend = opts.output_kind_ == PANEL ? nq: asym ? ns: ns - i - 1;
+                        if(opts.output_kind_ == SYMMETRIC_ALL_PAIRS) print_tabs(i + 1, biof);
+                        batched_write(datp, biof, jend);
                     }
-                    if(fn.size() < 9) fn.append(9 - fn.size(), ' ');
-                    fmt::format_to(biof, "{}", fn);
-                    const size_t jend = opts.output_kind_ == PANEL ? nq: asym ? ns: ns - i - 1;
-                    if(opts.output_kind_ == SYMMETRIC_ALL_PAIRS) print_tabs(i + 1, biof);
-                    batched_write(datp, biof, jend);
                 }
-            }
-            datq.clear();
-            of.close(); // Flush and close, and then open a posix file
-            auto off = fmt::file(outp, fmt::file::WRONLY | fmt::file::APPEND);
-            for(const auto &buf: bufs) {
-                const size_t nblocks = (buf.size() + BUFSIZEM1) / BUFSIZE;
-                auto ptr = buf.data();
-                // Chunk the writing according to blocksize
-                for(size_t i = 0; i < nblocks; ++i) {
-                    const size_t n_in_block = (i == nblocks - 1) ? buf.size() & BUFSIZEM1: BUFSIZE;
-                    off.write(ptr, n_in_block);
-                    ptr += BUFSIZE;
+                datq.clear();
+                of.close(); // Flush and close, and then open a posix file
+                auto off = fmt::file(outp, fmt::file::WRONLY | fmt::file::APPEND);
+                for(const auto &buf: bufs) {
+                    const size_t nblocks = (buf.size() + BUFSIZEM1) / BUFSIZE;
+                    auto ptr = buf.data();
+                    // Chunk the writing according to blocksize
+                    for(size_t i = 0; i < nblocks; ++i) {
+                        const size_t n_in_block = (i == nblocks - 1) ? buf.size() & BUFSIZEM1: BUFSIZE;
+                        off.write(ptr, n_in_block);
+                        ptr += BUFSIZE;
+                    }
                 }
             }
         } else {
