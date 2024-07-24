@@ -153,7 +153,7 @@ public:
         reset();
     }
     void set_mincount(double v) {
-        std::cout << "Calling set_mincount() inside LazyOnePermSetSketch" << std::endl;
+        //std::cout << "Calling set_mincount() inside LazyOnePermSetSketch" << std::endl;
         
         if(v > 1.) {
             mincount_ = v;
@@ -224,7 +224,7 @@ public:
     static_assert(omul != 0.L, "sanity check");
     template<typename T2=SigT>
     std::vector<T2> to_sigs() const {
-        std::cout << "Calling to_sigs() inside LazyOnePermSetSketch" << std::endl;
+        //std::cout << "Calling to_sigs() inside LazyOnePermSetSketch" << std::endl;
         
         std::vector<T2> ret(size());
         std::transform(registers_.begin(), registers_.end(), ret.begin(), [sz2=size()/2](auto x) -> T2 {
@@ -237,7 +237,7 @@ public:
         return ret;
     }
     void reset() {
-        std::cout << "Calling reset() inside LazyOnePermSetSketch" << std::endl;
+        //std::cout << "Calling reset() inside LazyOnePermSetSketch" << std::endl;
         
         std::fill_n(registers_.data(), registers_.size(), T(-1));
         std::memset(counts_.data(), 0, counts_.size() * sizeof(double));
@@ -248,12 +248,12 @@ public:
     }
     double getcard() {
         //Prints useful for debug, but pollute output in real algorithm
-        std::cout << "Calling getcard() inside LazyOnePermSetSketch" << std::endl;
+        //std::cout << "Calling getcard() inside LazyOnePermSetSketch" << std::endl;
 
         // Print the type of the elements in registers_
         int status;
         char* realname = abi::__cxa_demangle(typeid(registers_[0]).name(), 0, 0, &status);
-        std::cout << "Type of registers_ elements: " << (status == 0 ? realname : typeid(registers_[0]).name()) << std::endl;
+        //std::cout << "Type of registers_ elements: " << (status == 0 ? realname : typeid(registers_[0]).name()) << std::endl;
         free(realname);  // Free the allocated memory for the demangled type name*/
 
         
@@ -264,23 +264,23 @@ public:
 
         //Prints useful for debug, but pollute output in real algorithm
         // Adding print statements to display m_, sum, and register values
-        std::cout << "m_: " << m_ << std::endl;
-        std::cout << "Sum: " << sum << std::endl;
+        //std::cout << "m_: " << m_ << std::endl;
+        //std::cout << "Sum: " << sum << std::endl;
 
         if (!registers_.empty()) {
-            std::cout << "First 5 register values: ";
+            /*std::cout << "First 5 register values: ";
             for(size_t i = 0; i < 5 && i < registers_.size(); ++i) {
                 std::cout << registers_[i] << " ";
             }
             std::cout << std::endl;
-            std::cout << "Last register value: " << registers_.back() << std::endl;
+            std::cout << "Last register value: " << registers_.back() << std::endl;*/
         }
 
         if(!sum) return std::numeric_limits<double>::infinity();
         return m_ * (m_ / sum);
     }
     SigT *data() {
-        std::cout << "Calling *data() inside LazyOnePermSetSketch" << std::endl;
+        //std::cout << "Calling *data() inside LazyOnePermSetSketch" << std::endl;
         
         if(!as_sigs_.empty()) return as_sigs_.data();
         as_sigs_ = std::vector<SigT>(registers_.size());
@@ -298,7 +298,7 @@ public:
         return asp;
     }
     std::vector<uint64_t> &ids() {
-        std::cout << "Calling ids() inside LazyOnePermSetSketch" << std::endl;
+        //std::cout << "Calling ids() inside LazyOnePermSetSketch" << std::endl;
         
         auto p = new std::vector<uint64_t>(registers_.size());
         original_ids_.reset(p);
@@ -308,7 +308,7 @@ public:
         return *p;
     }
     std::vector<uint32_t> &idcounts() {
-        std::cout << "Calling idcounts() inside LazyOnePermSetSketch" << std::endl;
+        //std::cout << "Calling idcounts() inside LazyOnePermSetSketch" << std::endl;
         
         auto p = new std::vector<uint32_t>(size());
         idcounts_.reset(p);
