@@ -229,6 +229,49 @@ float cmp_sketches(std::shared_ptr<dashing2::SketchingResult> sketch1, std::shar
     return distance_0_1;
 }
 
+// Function to call dashing2_main and generate the output file
+void exact_kmc(const int kmer_size, const std::string& fasta_filepath, const std::string& out_prefix) {
+    // Extract the part between the last '/' and the next '.' in the filepath
+    size_t last_slash_pos = fasta_filepath.find_last_of('/');
+    size_t dot_pos = fasta_filepath.find('.', last_slash_pos);
+    if (last_slash_pos == std::string::npos || dot_pos == std::string::npos) {
+        throw std::runtime_error("Invalid filepath format");
+    }
+    std::string name = fasta_filepath.substr(last_slash_pos + 1, dot_pos - last_slash_pos - 1);
+    std::string outfile = out_prefix + name + "_kmers.d2";
+
+    std::vector<std::string> args = {
+        "dashing2",                // Command 
+        "sketch",                  // Subcommand
+        "--set",                   // Flag to indicate pre-sketched files
+        "-k" + std::to_string(kmer_size), // k-mer size flag with value
+        "-o",                      // Output flag
+        outfile,                   // Output file path
+        fasta_filepath             // Input FASTA file path
+    };
+
+    std::vector<char*> argv;
+    std::vector<std::unique_ptr<char[]>> arg_buffers; // Buffers to keep the C-style strings alive
+
+    for (const auto& arg : args) {
+        std::unique_ptr<char[]> buffer = std::make_unique<char[]>(arg.size() + 1);
+        std::strcpy(buffer.get(), arg.c_str());
+        argv.push_back(buffer.get());
+        arg_buffers.push_back(std::move(buffer)); // Keep the buffer alive
+    }
+
+    argv.push_back(nullptr); // Ensure null-termination
+    int argc = argv.size() - 1; // Don't count the null terminator
+
+    int result = dashing2_main(argc, argv.data()); 
+    
+    if (result != 0) {
+        throw std::runtime_error("exact_kmc() failed"); 
+    }
+
+    return;
+}
+
 
 //Workaround for default arguments
 int dashing2_main(int argc, char **argv, DistanceCallback callback) {
