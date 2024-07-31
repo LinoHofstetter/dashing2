@@ -541,6 +541,9 @@ do {\
             std::vector<uint64_t> kmervec64;
             std::vector<double> kmerveccounts;
             if(opts.kmer_result_ == FULL_MMER_SET || opts.kmer_result_ == FULL_MMER_COUNTDICT) {
+                if (verbosity >= Verbosity::DEBUG){
+                    std::cout << "opts.kmer_result_ == FULL_MMER_SET || opts.kmer_result_ == FULL_MMER_COUNTDICT" << std::endl;
+                }
                 if(opts.use128())
                     ctr.finalize(kmervec128, kmerveccounts, opts.count_threshold_);
                 else
@@ -559,6 +562,9 @@ do {\
             } else THROW_EXCEPTION(std::runtime_error("Unexpected space for counter-based m-mer encoding"));
                 // Make bottom-k if we generated full k-mer sets or k-mer count dictionaries, and copy then over
             if(kmervec64.size() || kmervec128.size()) {
+                if (verbosity >= Verbosity::DEBUG){
+                    std::cout << "kmervec64.size() || kmervec128.size()" << std::endl;
+                }
                 if(ret.signatures_.size()) {
                     std::vector<BKRegT> keys(ss);
                     double *const kvcp = kmerveccounts.empty() ? static_cast<double *>(nullptr): kmerveccounts.data();
@@ -567,9 +573,15 @@ do {\
                     std::copy(keys.begin(), keys.end(), (BKRegT *)&ret.signatures_[mss]);
                 }
             }
+            if (verbosity >= Verbosity::DEBUG){
+                std::cout << "fastx2sketch: Writing results to file in next step" << std::endl;
+            }
             //write results to file
             std::FILE * ofp{nullptr};
             if(opts.cache_sketches_ || opts.kmer_result_  == FULL_MMER_SET || opts.kmer_result_ == FULL_MMER_COUNTDICT) {
+                if (verbosity >= Verbosity::DEBUG){
+                    std::cout << "fastx2sketch: opts.cache_sketches_ || opts.kmer_result_  == FULL_MMER_SET || opts.kmer_result_ == FULL_MMER_COUNTDICT" << std::endl;
+                }
                 std::fprintf(stderr, "Writing saved sketch to %s\n", destination.data());
                 ofp = bfopen(destination.data(), "wb");
                 if(!ofp) THROW_EXCEPTION(std::runtime_error(std::string("Failed to open std::FILE * at") + destination));
@@ -621,6 +633,9 @@ do {\
                 std::vector<double> tmp(ss);
 #define DO_IF(x) if(x.size()) {std::copy(x[tid].idcounts().begin(), x[tid].idcounts().end(), tmp.data());}
                 if(opts.kmer_result_ == FULL_MMER_COUNTDICT || (opts.kmer_result_ == FULL_MMER_SET && opts.save_kmercounts_)) {
+                    if (verbosity >= Verbosity::DEBUG){
+                        std::cout << "fastx2sketch: opts.kmer_result_ == FULL_MMER_COUNTDICT || (opts.kmer_result_ == FULL_MMER_SET && opts.save_kmercounts_)" << std::endl;
+                    }
                     DBG_ONLY(std::fprintf(stderr, "kvc size %zu. Writing to file %s\n", kmerveccounts.size(), destkmercounts.data());)
                     tmp = std::move(kmerveccounts);
                 } else DO_IF(pmhs) else DO_IF(bmhs) else DO_IF(opss) else DO_IF(fss)
