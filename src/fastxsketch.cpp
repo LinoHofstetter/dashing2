@@ -533,7 +533,7 @@ do {\
         {
             if (verbosity >= Verbosity::DEBUG){
                 std::cout << "PL: In file writing part" << std::endl;
-                std::cout << "PL: opts.sspace_ == SPACE_MULTISET || SPACE_PSET, opts-kmer_result_ == FULL_MMER_SET || FULL_MMER_COUNTDICT" << std::endl;
+                std::cout << "PL: opts.sspace_ == SPACE_MULTISET || SPACE_PSET, opts.kmer_result_ == FULL_MMER_SET || FULL_MMER_COUNTDICT" << std::endl;
             }
             auto &ctr = ctrs[tid];
             perf_for_substrs([&ctr](auto x) {ctr.add(x);});

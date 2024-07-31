@@ -126,6 +126,15 @@ SketchingResult &sketch_core(SketchingResult &result, Dashing2DistOptions &opts,
     }
     std::FILE *ofp;
     //Writing results in case of working with Full Mmer Sequences
+    if (verbosity >= Verbosity::DEBUG) {
+        if (opts.kmer_result_ == FULL_MMER_SEQUENCE) {
+            std::cout << "opts.kmer_result = FULL_MMER_SEQUENCE" << std::endl;
+        } else if (opts.kmer_result_ == FULL_MMER_COUNTDICT) {
+            std::cout << "opts.kmer_result = FULL_MMER_COUNTDICT" << std::endl;
+        }
+        
+    }
+
     if(opts.kmer_result_ == FULL_MMER_SEQUENCE) {
         if (verbosity >= Verbosity::DEBUG) {
             std::cout << "opts.dytpe_ = FULL_MMER_SEQUENCE" << std::endl;
