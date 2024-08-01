@@ -123,6 +123,9 @@ int sketch_main(int argc, char **argv) {
     opts.filterset(fsarg);
     if((opts.sspace_ == SPACE_PSET || opts.sspace_ == SPACE_MULTISET || opts.sspace_ == SPACE_EDIT_DISTANCE)
             && opts.kmer_result_ == ONE_PERM) {
+        if (verbosity >= Verbosity::DEBUG) {
+            std::cout << "sketch_main: Setting opts.kmer_result_ = FULL_SETSKETCH" << std::endl;
+        }
         opts.kmer_result_ = FULL_SETSKETCH;
     }
     opts.bed_parse_normalize_intervals_ = normalize_bed;
